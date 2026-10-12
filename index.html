@@ -7,16 +7,16 @@ ol{margin:0 0 36px;padding:0;list-style:none;display:grid;gap:10px;grid-template
 ol li{counter-increment:s;background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px 16px;font-size:13px;line-height:1.5}
 ol li:before{content:counter(s);display:block;font-weight:800;font-size:12px;color:var(--mute);margin-bottom:4px}
 .g{display:grid;gap:20px;grid-template-columns:repeat(auto-fit,minmax(280px,1fr))}
-.it iframe{display:block;width:100%;height:230px;border:0}
+.it iframe{display:block;width:100%;height:230px;border:0}.it.wide{grid-column:1/-1}.it.wide iframe{height:520px}.it.tall iframe{height:300px}
 .bar{display:flex;justify-content:space-between;align-items:center;margin-top:10px;font-size:13px;font-weight:700}
 .opt{margin-top:36px;font-size:13px;color:#73726e;line-height:1.7}code{background:#ecece9;border-radius:5px;padding:1px 5px;font-size:12px}
 </style></head><body><main><h1>Notion Widgets</h1><p class="l">노션 페이지에 붙여 쓰는 미니멀 위젯. 가입 없이 링크만 복사하면 돼요.</p>
 <ol><li>원하는 위젯의 <b>링크 복사</b>를 누르세요.</li><li>노션에서 <code>/embed</code>(임베드)를 입력하고 링크를 붙여넣으세요.</li><li>모서리를 끌어 크기를 맞추면 끝. 설정은 자동 저장돼요.</li></ol>
 <div class="g" id="g"></div>
-<p class="opt"><b>옵션</b> · 다크 모드: 링크 끝에 <code>?theme=dark</code> · 같은 위젯을 여러 개 따로 쓰기: <code>?id=이름</code> · 함께 쓰기: <code>?theme=dark&amp;id=work</code></p></main>
+<p class="opt"><b>함께 쓰기</b> · 플래너, 과목, 타이머, 스터디 로그는 서로 연결돼요. 타이머에서 Finish를 누르면 스터디 로그에 자동으로 기록돼요.<br><b>옵션</b> · 다크 모드: 링크 끝에 <code>?theme=dark</code> · 같은 위젯을 여러 개 따로 쓰기: <code>?id=이름</code> · 함께 쓰기: <code>?theme=dark&amp;id=work</code></p></main>
 <script>
-var L=[['clock.html','플립 시계'],['dday.html','데이 카운터'],['tracker.html','주간 트래커'],['timer.html','스터디 타이머'],['profile.html','프로필']],b=location.href.replace(/[^/]*$/,'');
-document.getElementById('g').innerHTML=L.map(function(w){return '<div class="it"><iframe src="'+w[0]+'?id=demo" title="'+w[1]+'" loading="lazy"></iframe><div class="bar"><span>'+w[1]+'</span><button class="btn" data-u="'+b+w[0]+'">링크 복사</button></div></div>'}).join('');
+var L=[['planner.html','플래너 (캘린더 + 할 일)','wide'],['courses.html','과목','tall'],['studylog.html','스터디 로그','tall'],['clock.html','플립 시계'],['dday.html','데이 카운터'],['tracker.html','주간 트래커'],['timer.html','스터디 타이머'],['profile.html','프로필']],b=location.href.replace(/[^/]*$/,'');
+document.getElementById('g').innerHTML=L.map(function(w){return '<div class="it '+(w[2]||'')+'"><iframe src="'+w[0]+'?id=demo" title="'+w[1]+'" loading="lazy"></iframe><div class="bar"><span>'+w[1]+'</span><button class="btn" data-u="'+b+w[0]+'">링크 복사</button></div></div>'}).join('');
 document.getElementById('g').onclick=function(e){var u=e.target.getAttribute('data-u');if(!u)return;var t=e.target;function ok(){t.textContent='복사됨';setTimeout(function(){t.textContent='링크 복사'},1500)}
 if(navigator.clipboard)navigator.clipboard.writeText(u).then(ok,function(){prompt('링크',u)});else prompt('링크',u)};
 </script></body></html>

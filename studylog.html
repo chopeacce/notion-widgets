@@ -1,0 +1,39 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Study Log</title><link rel="stylesheet" href="w.css"><style>
+.rt{display:flex;gap:8px;align-items:center}
+.bars{flex:1.1;min-height:70px;display:flex;align-items:stretch;gap:6px;margin:12px 0 10px}
+.col{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:4px;min-width:0}
+.v{font-size:9.5px;font-weight:700;color:var(--mute);white-space:nowrap}
+.bar{width:100%;max-width:34px;border-radius:6px 6px 2px 2px;background:var(--ink);min-height:2px}
+.bar.z{background:var(--dot)}
+.dl{font-size:10px;font-weight:600;color:var(--mute)}.col.t .dl{color:var(--ink);font-weight:800}
+.by{flex:1;min-height:0;overflow:auto;border-top:1px solid var(--line);padding-top:8px;display:flex;flex-direction:column;gap:7px}
+.cr{display:grid;grid-template-columns:minmax(0,34%) 1fr auto;gap:8px;align-items:center;font-size:11px;font-weight:700}
+.cr span:first-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tr{height:6px;border-radius:3px;background:var(--dot);overflow:hidden}.tr i{display:block;height:100%;background:var(--ink);border-radius:3px}
+.cr em{font-style:normal;color:var(--mute);font-weight:600;font-variant-numeric:tabular-nums}
+.rec{display:flex;flex-direction:column;gap:4px;border-top:1px solid var(--line);padding-top:8px}
+.rec div{display:flex;justify-content:space-between;align-items:center;font-size:11px;font-weight:600;gap:8px}
+.rec button{border:0;background:transparent;color:var(--mute);font-size:14px;cursor:pointer;padding:0 4px}
+</style></head><body><div class="card"><div class="hd"><span>Study Log</span><span class="rt"><span class="sub" id="wk"></span><button class="pill" id="addb">+ Add</button></span></div>
+<div class="bars" id="bars" role="img" aria-label="Study time for the last 7 days"></div><div class="by" id="by"></div>
+<div class="sheet" id="sheet"><div class="box"><h3>Add study time</h3><label>Course<select id="fC"></select></label><label>Minutes<input type="number" id="fM" min="1" max="1440" value="60"></label><label>Date<input type="date" id="fD"></label>
+<div class="rowb"><button class="btn ghost sm" id="fX">Cancel</button><button class="btn sm" id="fOk">Save</button></div><div class="rec" id="rec"></div></div></div></div>
+<script src="w.js"></script><script>
+var $=W.$,L;
+function render(){L=W.get('log',[]);var C=W.courses(),n=new Date(),days=[],tot=0,max=0,by={};
+for(var i=6;i>=0;i--){var d=new Date(n.getFullYear(),n.getMonth(),n.getDate()-i);days.push({k:W.iso(d),l:d.toLocaleDateString(W.lang,{weekday:'narrow'}),ms:0})}
+L.forEach(function(x){days.forEach(function(d){if(d.k===x.d){d.ms+=x.ms;tot+=x.ms;by[x.c||'']=(by[x.c||'']||0)+x.ms}})});
+days.forEach(function(d){max=Math.max(max,d.ms)});
+$('wk').textContent='7 days · '+W.hrs(tot);
+$('bars').innerHTML=days.map(function(d,i){return '<div class="col'+(i===6?' t':'')+'"><span class="v">'+(d.ms?W.hrs(d.ms):'')+'</span><div class="bar'+(d.ms?'':' z')+'" style="height:'+(d.ms?Math.max(6,Math.round(d.ms/max*100)):0)+'%"></div><span class="dl">'+d.l+'</span></div>'}).join('');
+var rows=C.map(function(c){return{n:c.n,ms:by[c.id]||0}});if(by[''])rows.push({n:'Other',ms:by['']});var m2=Math.max.apply(null,rows.map(function(r){return r.ms}).concat([1]));
+$('by').innerHTML=rows.length?rows.map(function(r){return '<div class="cr"><span>'+W.esc(r.n)+'</span><div class="tr"><i style="width:'+Math.round(r.ms/m2*100)+'%"></i></div><em>'+W.hrs(r.ms)+'</em></div>'}).join(''):'<div class="empty">Finish a timer session or press + Add.</div>'}
+function sheet(){var C=W.courses(),nm={};C.forEach(function(c){nm[c.id]=c.n});$('fC').innerHTML=W.opts($('fC').value);$('fD').value=$('fD').value||W.iso(new Date());
+var r=L.slice(-5).reverse();$('rec').innerHTML=r.map(function(x){return '<div><span>'+x.d.slice(5).replace('-','/')+' · '+W.esc(nm[x.c]||'Other')+' · '+W.hrs(x.ms)+'</span><button data-id="'+x.id+'" aria-label="Delete session">×</button></div>'}).join('');$('rec').style.display=r.length?'flex':'none'}
+$('addb').onclick=function(){sheet();$('sheet').classList.add('on')};
+function close(){$('sheet').classList.remove('on')}$('fX').onclick=close;$('sheet').onclick=function(e){if(e.target===this)close()};
+$('fOk').onclick=function(){var m=Math.round(+$('fM').value);if(!(m>0)||!$('fD').value){$('fM').focus();return}L.push({id:W.uid(),c:$('fC').value,d:$('fD').value,ms:m*60000});W.set('log',L);close();render()};
+$('rec').onclick=function(e){var id=e.target.getAttribute('data-id');if(!id)return;L=L.filter(function(x){return x.id!==id});W.set('log',L);render();sheet()};
+document.addEventListener('keydown',function(e){if(e.key==='Escape')close()});
+W.on(function(){render()});render();
+</script></body></html>

@@ -1,0 +1,27 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Courses</title><link rel="stylesheet" href="w.css"><style>
+.hd{padding-bottom:12px;border-bottom:1px solid var(--line)}
+.list{flex:1;min-height:0;overflow:auto;display:flex;flex-direction:column}
+.row{display:flex;align-items:center;gap:10px;width:100%;border:0;border-bottom:1px solid var(--line);background:transparent;color:inherit;font:inherit;text-align:left;padding:10px 2px;cursor:pointer}
+.row:last-child{border-bottom:0}
+.l{flex:1;min-width:0}
+.cn{display:block;font-size:13px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cs{display:block;font-size:11px;color:var(--mute);font-weight:500;margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.st{flex:none;text-align:right;font-size:11px;font-weight:700}.st small{display:block;font-size:10px;color:var(--mute);font-weight:600;margin-top:2px}
+</style></head><body><div class="card"><div class="hd"><span>Courses</span><button class="pill" id="addb">+ Add</button></div><div class="list" id="list"></div>
+<div class="sheet" id="sheet"><div class="box"><h3 id="sh"></h3><label>Course<input id="fN" maxlength="40" placeholder="Contracts"></label><label>Professor<input id="fP" maxlength="40" placeholder="Prof. Kim"></label><label>Schedule<input id="fW" maxlength="40" placeholder="Mon / Wed 10:30 · Room 204"></label>
+<div class="rowb"><button class="btn ghost sm" id="fDel">Delete</button><button class="btn sm" id="fOk">Save</button></div></div></div></div>
+<script src="w.js"></script><script>
+var $=W.$,C,cur=null;
+function render(){C=W.courses();var T=W.get('tasks',[]),L=W.get('log',[]);
+$('list').innerHTML=C.length?C.map(function(c){var n=T.filter(function(t){return t.c===c.id&&!t.done}).length,ms=L.reduce(function(s,x){return s+(x.c===c.id?x.ms:0)},0),sub=[c.p,c.w].filter(Boolean).join(' · ');
+return '<button class="row" data-id="'+c.id+'"><span class="l"><span class="cn">'+W.esc(c.n)+'</span><span class="cs">'+(sub?W.esc(sub):'Add professor and schedule')+'</span></span><span class="st">'+W.hrs(ms)+'<small>'+n+' open task'+(n===1?'':'s')+'</small></span></button>'}).join(''):'<div class="empty">No courses yet. Press + Add.</div>'}
+function open(c){cur=c;$('sh').textContent=c?'Edit course':'New course';$('fN').value=c?c.n:'';$('fP').value=c?c.p:'';$('fW').value=c?c.w:'';$('fDel').style.visibility=c?'visible':'hidden';$('sheet').classList.add('on');$('fN').focus()}
+function close(){$('sheet').classList.remove('on')}
+$('addb').onclick=function(){open(null)};
+$('list').onclick=function(e){var r=e.target.closest('.row');if(!r)return;var id=r.getAttribute('data-id');open(C.filter(function(c){return c.id===id})[0])};
+$('fOk').onclick=function(){var n=$('fN').value.trim();if(!n){$('fN').focus();return}if(cur){cur.n=n;cur.p=$('fP').value.trim();cur.w=$('fW').value.trim()}else C.push({id:W.uid(),n:n,p:$('fP').value.trim(),w:$('fW').value.trim()});W.set('courses',C);close();render()};
+$('fDel').onclick=function(){if(!cur)return;var id=cur.id;C=C.filter(function(c){return c.id!==id});W.set('courses',C);close();render()};
+$('sheet').onclick=function(e){if(e.target===this)close()};
+document.addEventListener('keydown',function(e){if(e.key==='Escape')close();if(e.key==='Enter'&&$('sheet').classList.contains('on'))$('fOk').click()});
+W.on(function(){if(!$('sheet').classList.contains('on'))render()});render();
+</script></body></html>

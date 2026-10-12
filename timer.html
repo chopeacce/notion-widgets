@@ -1,15 +1,17 @@
 <!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Study Timer</title><link rel="stylesheet" href="w.css"><style>
-.n{font-size:min(15vw,28vh);line-height:1}
-.b{display:flex;gap:8px;margin-top:min(5vw,8vh)}
-</style></head><body><div class="card"><div class="hd"><span>Study Timer</span><span class="sub" id="td"></span></div><div class="mid"><div class="n num" id="t">00:00:00</div><div class="b"><button class="btn" id="go">Start</button><button class="btn ghost" id="rs">Reset</button></div></div></div>
+.n{font-size:min(15vw,26vh);line-height:1}
+.b{display:flex;gap:8px;margin-top:min(5vw,7vh)}
+#cs{margin-top:min(4vw,5vh);max-width:80%;border-radius:999px;padding:5px 10px;font-weight:600}
+</style></head><body><div class="card"><div class="hd"><span>Study Timer</span><span class="sub" id="td"></span></div><div class="mid"><div class="n num" id="t">00:00:00</div><select id="cs" aria-label="Course"></select><div class="b"><button class="btn" id="go">Start</button><button class="btn ghost" id="fin">Finish</button></div></div></div>
 <script src="w.js"></script><script>
-var $=W.$;function dk(){var n=new Date();return 'day-'+n.getFullYear()+'-'+(n.getMonth()+1)+'-'+n.getDate()}
-var s=W.get('timer',{base:0,t0:0,run:false});
+var $=W.$,s=W.get('timer',{base:0,t0:0,run:false,c:''});
 function cur(){return s.base+(s.run?Date.now()-s.t0:0)}
 function f(ms){var x=Math.floor(ms/1000),h=Math.floor(x/3600),m=Math.floor(x%3600/60);x=x%60;return [h,m,x].map(function(v){return String(v).padStart(2,'0')}).join(':')}
-function hm(ms){var m=Math.floor(ms/60000);return (m>=60?Math.floor(m/60)+'h ':'')+m%60+'m'}
-function tick(){$('t').textContent=f(cur());$('go').textContent=s.run?'Pause':(s.base?'Resume':'Start');$('td').textContent='Today '+hm(W.get(dk(),0)+cur())}
+function today(){var k=W.iso(new Date());return W.get('log',[]).reduce(function(a,x){return a+(x.d===k?x.ms:0)},0)}
+function tick(){$('t').textContent=f(cur());$('go').textContent=s.run?'Pause':(s.base?'Resume':'Start');$('td').textContent='Today '+W.hrs(today()+cur())}
+function opts(){$('cs').innerHTML=W.opts(s.c)}
+$('cs').onchange=function(){s.c=this.value;W.set('timer',s)};
 $('go').onclick=function(){if(s.run){s.base=cur();s.run=false}else{s.t0=Date.now();s.run=true}W.set('timer',s);tick()};
-$('rs').onclick=function(){W.set(dk(),W.get(dk(),0)+cur());s={base:0,t0:0,run:false};W.set('timer',s);tick()};
-tick();setInterval(tick,500);
+$('fin').onclick=function(){var ms=cur();if(ms>=60000){var L=W.get('log',[]);L.push({id:W.uid(),c:s.c,d:W.iso(new Date()),ms:ms});W.set('log',L)}s={base:0,t0:0,run:false,c:s.c};W.set('timer',s);tick()};
+W.on(function(k){if(k==='courses')opts()});opts();tick();setInterval(tick,500);
 </script></body></html>

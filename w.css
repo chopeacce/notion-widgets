@@ -14,3 +14,14 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Pretendard","Apple SD Gothic 
 input{font:inherit;font-size:11px;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:7px;padding:4px 6px;min-width:0}
 input:focus,button:focus-visible,[contenteditable]:focus{outline:2px solid var(--ink);outline-offset:1px}
 .num{font-variant-numeric:tabular-nums;letter-spacing:-.03em;font-weight:800}
+textarea{font:11px/1.4 ui-monospace,Menlo,monospace;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:8px;resize:none;width:100%}
+select{font:inherit;font-size:11px;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:7px;padding:4px 6px;min-width:0}
+.sheet{position:absolute;inset:0;background:rgba(0,0,0,.28);display:none;align-items:center;justify-content:center;z-index:5}
+.sheet.on{display:flex}
+.box{background:var(--bg);border:1px solid var(--line);border-radius:16px;padding:16px;width:min(300px,90%);max-height:92%;overflow:auto;display:flex;flex-direction:column;gap:8px}
+.box h3{margin:0 0 2px;font-size:13px}
+.box label{font-size:10px;font-weight:700;color:var(--mute);display:flex;flex-direction:column;gap:3px}
+.box input,.box select{font-size:12px;padding:7px 8px}
+.rowb{display:flex;gap:6px;justify-content:space-between;margin-top:4px}
+.btn.sm{padding:7px 14px;font-size:11px}
+.empty{font-size:11px;color:var(--mute);text-align:center;padding:18px 8px;line-height:1.6}
