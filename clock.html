@@ -1,0 +1,13 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Flip Clock</title><link rel="stylesheet" href="w.css"><style>
+.pill{position:absolute;top:14px;right:14px}
+.row{display:flex;align-items:center;gap:min(1.4vw,2.4vh)}
+.d{position:relative;width:min(16vw,27vh);height:min(23vw,39vh);background:var(--ink);color:var(--bg);border-radius:min(2.6vw,4.4vh);display:flex;align-items:center;justify-content:center;font-size:min(15vw,25vh);font-weight:800}
+.d:after{content:"";position:absolute;left:0;right:0;top:50%;height:max(1px,.5vmin);background:var(--bg)}
+.c{color:var(--dot);font-weight:800;font-size:min(8vw,13vh);margin:0 .4vmin}
+.day{margin-top:min(4vw,6vh);font-size:11px;font-weight:700;letter-spacing:.18em;color:var(--mute);text-transform:uppercase}
+</style></head><body><div class="card"><button class="pill" id="hb" aria-label="Toggle 12 or 24 hour"></button><div class="mid"><div class="row"><div class="d" id="a"></div><div class="d" id="b"></div><div class="c">:</div><div class="d" id="c"></div><div class="d" id="e"></div></div><div class="day" id="day"></div></div></div>
+<script src="w.js"></script><script>
+var $=W.$,h24=W.get('h24',true);
+function t(){var n=new Date(),h=n.getHours();if(!h24)h=h%12||12;var s=String(h).padStart(2,'0')+String(n.getMinutes()).padStart(2,'0');$('a').textContent=s[0];$('b').textContent=s[1];$('c').textContent=s[2];$('e').textContent=s[3];$('hb').textContent=h24?'24H':(n.getHours()<12?'AM':'PM');$('day').textContent=n.toLocaleDateString(W.q.get('lang')||'en-US',{weekday:'long',month:'short',day:'numeric'})}
+$('hb').onclick=function(){h24=!h24;W.set('h24',h24);t()};t();setInterval(t,1000);
+</script></body></html>

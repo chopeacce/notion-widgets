@@ -1,0 +1,21 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Weekly Tracker</title><link rel="stylesheet" href="w.css"><style>
+.hd{padding-bottom:12px;border-bottom:1px solid var(--line)}
+.w{flex:1;min-height:0;display:flex;align-items:center}
+table{width:100%;border-collapse:collapse}
+th{font-size:10px;color:var(--mute);font-weight:600;padding:2px 0 4px}th.t{color:var(--ink)}
+td{text-align:center;padding:4px 0}
+td.n{text-align:left;font-size:12px;font-weight:700;white-space:nowrap;padding-right:8px;max-width:30vw;overflow:hidden;text-overflow:ellipsis}
+.o{display:block;margin:auto;width:min(17px,5.6vw);aspect-ratio:1;border-radius:50%;border:0;padding:0;background:var(--dot);cursor:pointer}.o.f{background:var(--ink)}
+.ed{display:none;flex:1;flex-direction:column;gap:6px;justify-content:center}.editing .ed{display:flex}.editing .w{display:none}
+.ed input{width:100%}
+.rt{display:flex;gap:6px;align-items:center}
+</style></head><body><div class="card" id="card"><div class="hd"><span>Weekly Tracker</span><span class="rt"><span class="sub" id="rc"></span><button class="pill" id="eb">Edit</button></span></div>
+<div class="w"><table id="tb"></table></div><div class="ed" id="ed"></div></div>
+<script src="w.js"></script><script>
+var $=W.$,rows=W.get('rows',['Contracts','Civ Pro','Torts','Lawyering']),days=['M','T','W','T','F','S','S'],n0=new Date(),td=(n0.getDay()+6)%7,mon=new Date(n0.getFullYear(),n0.getMonth(),n0.getDate()-td),key='wk-'+mon.getFullYear()+'-'+(mon.getMonth()+1)+'-'+mon.getDate(),st=W.get(key,{});
+function r(){var h='<tr><th></th>'+days.map(function(d,j){return '<th'+(j===td?' class="t"':'')+'>'+d+'</th>'}).join('')+'</tr>',c=0;rows.forEach(function(w,i){h+='<tr><td class="n">'+W.esc(w)+'</td>';for(var j=0;j<7;j++){var k=i+'-'+j;if(st[k])c++;h+='<td><button class="o'+(st[k]?' f':'')+'" data-k="'+k+'" aria-label="'+W.esc(w)+' '+days[j]+'" aria-pressed="'+!!st[k]+'"></button></td>'}h+='</tr>'});
+$('tb').innerHTML=h;var tot=rows.length*7||1;$('rc').textContent=Math.round(c/tot*100)+'%';
+$('ed').innerHTML=[0,1,2,3,4].map(function(i){return '<input maxlength="14" placeholder="Row '+(i+1)+' (empty to hide)" value="'+W.esc(rows[i]||'')+'">'}).join('')}
+$('tb').onclick=function(e){var k=e.target.getAttribute('data-k');if(!k)return;st[k]=!st[k];W.set(key,st);r()};
+$('eb').onclick=function(){var on=$('card').classList.toggle('editing');this.textContent=on?'Done':'Edit';if(!on){var v=[].map.call($('ed').querySelectorAll('input'),function(i){return i.value.trim()}).filter(Boolean);if(v.length){rows=v;W.set('rows',rows)}r()}};r();
+</script></body></html>

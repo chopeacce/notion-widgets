@@ -1,0 +1,21 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Day Counter</title><link rel="stylesheet" href="w.css"><style>
+.big{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 10px;margin:10px 0 14px;flex:none}
+.big b{font-size:36px;line-height:1;white-space:nowrap}
+.dots{flex:1;min-height:0;display:flex;flex-wrap:wrap;gap:5px;align-content:flex-start;overflow:hidden}
+.dots i{width:8px;height:8px;border-radius:50%;background:var(--dot)}.dots i.f{background:var(--ink)}
+.ed{display:none;gap:8px;flex-direction:column;flex:1;justify-content:center}
+.ed label{display:flex;align-items:center;gap:8px;font-size:11px;font-weight:600;color:var(--mute)}
+.ed label span{width:38px}.ed input{flex:1}
+.editing .ed{display:flex}.editing .big,.editing .dots{display:none}
+</style></head><body><div class="card" id="card"><div class="hd"><span id="nm"></span><button class="pill" id="eb">Edit</button></div>
+<div class="big"><b class="num" id="dd"></b><span class="sub" id="ds"></span></div><div class="dots" id="dots"></div>
+<div class="ed"><label><span>Name</span><input id="n" maxlength="24"></label><label><span>Start</span><input type="date" id="s1"></label><label><span>Goal</span><input type="date" id="s2"></label></div></div>
+<script src="w.js"></script><script>
+var $=W.$;function iso(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
+var now=new Date(),cfg=W.get('dday',{n:'Finals',s:iso(new Date(now.getFullYear(),now.getMonth(),now.getDate()-30)),e:iso(new Date(now.getFullYear(),now.getMonth(),now.getDate()+60))});
+function dy(s){var p=s.split('-');return new Date(+p[0],p[1]-1,+p[2])}
+function r(){var s=dy(cfg.s),e=dy(cfg.e),n=new Date();n=new Date(n.getFullYear(),n.getMonth(),n.getDate());var tot=Math.max(1,Math.round((e-s)/864e5)),done=Math.min(tot,Math.max(0,Math.round((n-s)/864e5))),left=Math.round((e-n)/864e5);
+$('nm').textContent=cfg.n||'D-day';$('dd').textContent=left>0?'D-'+left:(left===0?'D-DAY':'D+'+(-left));$('ds').textContent=done+' / '+tot+' days · '+Math.round(done/tot*100)+'%';
+var k=Math.min(tot,730),h='';for(var i=0;i<k;i++)h+='<i'+(i<Math.round(done/tot*k)?' class="f"':'')+'></i>';$('dots').innerHTML=h;$('n').value=cfg.n||'';$('s1').value=cfg.s;$('s2').value=cfg.e}
+$('eb').onclick=function(){var c=$('card'),on=c.classList.toggle('editing');this.textContent=on?'Done':'Edit';if(!on&&$('s1').value&&$('s2').value&&$('s2').value>$('s1').value){cfg={n:$('n').value.trim(),s:$('s1').value,e:$('s2').value};W.set('dday',cfg)}r()};r();
+</script></body></html>
