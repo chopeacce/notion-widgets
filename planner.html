@@ -67,7 +67,7 @@ $('list').onclick=function(e){var it=e.target.closest('.it');if(!it)return;var t
 if(e.target.getAttribute('data-ck')){t.done=!t.done;save();render()}else if(e.target.getAttribute('data-pr')){t.p=t.p%3+1;save();render()}else open(t)};
 $('grid').onclick=function(e){var c=e.target.closest('.chip');if(c){var t=find(c.getAttribute('data-id'));if(t)open(t);return}
 var cell=e.target.closest('.cell');if(!cell)return;var k=cell.getAttribute('data-d');sel=sel===k?null:k;render();if(sel)$('add').focus()};
-$('add').onkeydown=function(e){if(e.key==='Escape'){sel=null;render();return}if(e.key!=='Enter')return;var v=this.value.trim();if(!v)return;
+$('add').onkeydown=function(e){if(e.isComposing||e.keyCode===229)return;if(e.key==='Escape'){sel=null;render();return}if(e.key!=='Enter')return;var v=this.value.trim();if(!v)return;
 T.push({id:W.uid(),t:v,d:sel||(tab==='today'?td():null),p:2,c:'',done:false});if(tab==='done')tab='inbox';this.value='';save();render()};
 document.querySelector('.tabs').onclick=function(e){var k=e.target.getAttribute('data-tab');if(k){tab=k;render()}};
 $('prev').onclick=function(){view=new Date(view.getFullYear(),view.getMonth()-1,1);render()};
@@ -87,6 +87,6 @@ $('bC').onclick=function(){$('bT').select();var ok=function(){$('bM').textConten
 $('bR').onclick=function(){try{var o=JSON.parse($('bT').value);if(!Array.isArray(o.tasks))throw 0;T=o.tasks;save();if(Array.isArray(o.courses))W.set('courses',o.courses);if(Array.isArray(o.log))W.set('log',o.log);$('sheet2').classList.remove('on');render()}catch(e){$('bM').textContent='That code is not a valid backup. Nothing was changed.'}};
 $('eOk').onclick=function(){if(!cur)return;var v=$('eT').value.trim();if(v)cur.t=v;cur.d=$('eD').value||null;cur.p=+$('eP').value;cur.c=$('eC').value;save();close();render()};
 $('eDel').onclick=function(){if(!cur)return;var id=cur.id;T=T.filter(function(t){return t.id!==id});save();close();render()};
-document.addEventListener('keydown',function(e){if(e.key==='Escape'){close();$('sheet2').classList.remove('on')}if(e.key==='Enter'&&cur&&e.target.id!=='add')$('eOk').click()});
+document.addEventListener('keydown',function(e){if(e.isComposing||e.keyCode===229)return;if(e.key==='Escape'){close();$('sheet2').classList.remove('on')}if(e.key==='Enter'&&cur&&e.target.id!=='add')$('eOk').click()});
 W.on(function(k){if(k==='tasks'&&!cur)T=W.get('tasks',[]);if(!cur)render()});render();
 </script></body></html>

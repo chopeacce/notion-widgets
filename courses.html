@@ -22,6 +22,6 @@ $('list').onclick=function(e){var r=e.target.closest('.row');if(!r)return;var id
 $('fOk').onclick=function(){var n=$('fN').value.trim();if(!n){$('fN').focus();return}if(cur){cur.n=n;cur.p=$('fP').value.trim();cur.w=$('fW').value.trim()}else C.push({id:W.uid(),n:n,p:$('fP').value.trim(),w:$('fW').value.trim()});W.set('courses',C);close();render()};
 $('fDel').onclick=function(){if(!cur)return;var id=cur.id;C=C.filter(function(c){return c.id!==id});W.set('courses',C);close();render()};
 $('sheet').onclick=function(e){if(e.target===this)close()};
-document.addEventListener('keydown',function(e){if(e.key==='Escape')close();if(e.key==='Enter'&&$('sheet').classList.contains('on'))$('fOk').click()});
+document.addEventListener('keydown',function(e){if(e.isComposing||e.keyCode===229)return;if(e.key==='Escape')close();if(e.key==='Enter'&&$('sheet').classList.contains('on'))$('fOk').click()});
 W.on(function(){if(!$('sheet').classList.contains('on'))render()});render();
 </script></body></html>
