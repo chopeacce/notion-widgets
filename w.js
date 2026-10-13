@@ -38,7 +38,7 @@ on:function(f){subs.push(f)}};
 window.addEventListener('storage',function(e){if(!e.key||e.key.indexOf(ns)!==0)return;var k=e.key.slice(ns.length);if(k.charAt(0)==='_')return;if(k==='lang'){location.reload();return}subs.forEach(function(f){f(k)})});
 if(code){setTimeout(function(){pull(8000)},50);setInterval(function(){pull(45000)},15000);document.addEventListener('visibilitychange',function(){pull(10000)});window.addEventListener('pagehide',function(){if(Object.keys(pend).length)flush(true)})}
 W.sync=!!code;
-var bc={};W.blob={put:function(id,d){bc[id]=d;if(code)return send(url('b_'+id),{d:{stringValue:d}}).catch(function(){});raw('b:'+id,d);return Promise.resolve()},
+var bc={};W.blob={put:function(id,d){bc[id]=d;if(code)return send(url('b_'+id),{d:{stringValue:d}}).catch(function(){});raw('b:'+id,d);return Promise.resolve()},putx:function(id,d){bc[id]=d;return send(url('b_'+id),{d:{stringValue:d}})},
 get:function(id){if(bc[id])return Promise.resolve(bc[id]);if(!code)return Promise.resolve(get('b:'+id,''));return fetch(url('b_'+id)).then(function(r){return r.json()}).then(function(j){var d=j.fields?j.fields.d.stringValue:'';if(d)bc[id]=d;return d}).catch(function(){return ''})}};
 var s2=document.getElementById('sheet2');
 if(s2){var r=document.createElement('div');r.className='rowb';r.innerHTML='<button class="btn sm'+(ko?' ghost':'')+'" data-l="en">English</button><button class="btn sm'+(ko?'':' ghost')+'" data-l="ko">한국어</button>';
