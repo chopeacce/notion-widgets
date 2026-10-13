@@ -17,8 +17,23 @@
 .op{border:1px solid var(--line);background:var(--bg);color:var(--ink);font:inherit;font-size:12px;font-weight:600;line-height:1.4;text-align:left;border-radius:11px;padding:9px 12px;cursor:pointer}
 .op:hover{border-color:var(--ink)}.op.ok{background:var(--ink);color:var(--bg);border-color:var(--ink)}.op.no{text-decoration:line-through;color:var(--mute)}.op:disabled{cursor:default}
 .nx{align-self:flex-end;visibility:hidden}.nx.on{visibility:visible}
-</style></head><body><div class="card"><div class="hd"><span>Break</span><span class="tabs"><button class="pill on" data-t="g">2048</button><button class="pill" data-t="q">Quiz</button></span></div>
+.sd{position:relative;width:min(100%,320px,calc(100vh - 170px));aspect-ratio:1;display:grid;grid-template-columns:repeat(9,1fr);grid-template-rows:repeat(9,1fr);border:2px solid var(--ink);border-radius:10px;overflow:hidden;outline:0;background:var(--bg)}
+.sc{display:flex;align-items:center;justify-content:center;font-size:clamp(11px,4.2vmin,19px);font-weight:500;color:#2563eb;border-right:1px solid var(--line);border-bottom:1px solid var(--line);cursor:pointer;user-select:none;font-variant-numeric:tabular-nums}
+.dark .sc{color:#7aa7ff}
+.sc.gv{color:var(--ink);font-weight:800}
+.sc:nth-child(9n){border-right:0}.sc:nth-child(n+73){border-bottom:0}
+.sc:nth-child(9n+3),.sc:nth-child(9n+6){border-right:2px solid var(--ink)}
+.sc:nth-child(n+19):nth-child(-n+27),.sc:nth-child(n+46):nth-child(-n+54){border-bottom:2px solid var(--ink)}
+.sc.rl{background:var(--chip)}.sc.sm{background:var(--dot)}.sc.on{background:var(--ink);color:var(--bg)}
+.sc.bad{color:#e5484d;text-decoration:underline}
+.np{display:flex;gap:4px;width:min(100%,320px)}
+.np button{flex:1;border:0;border-radius:8px;background:var(--chip);color:var(--ink);font:inherit;font-size:13px;font-weight:800;padding:7px 0;cursor:pointer}
+.np button:hover{background:var(--dot)}.np button.x{font-size:11px;color:var(--mute)}.np button.dn{opacity:.3}
+.sd .ov{border-radius:8px}
+.lv{border:0;background:transparent;font:inherit;font-size:11px;font-weight:700;color:var(--mute);cursor:pointer;padding:0 4px}.lv.on{color:var(--ink)}
+</style></head><body><div class="card"><div class="hd"><span>Break</span><span class="tabs"><button class="pill on" data-t="g">2048</button><button class="pill" data-t="s">Sudoku</button><button class="pill" data-t="q">Quiz</button></span></div>
 <div class="pane on" id="pg"><div class="bar"><span>Score<b id="sc">0</b></span><span>Best<b id="bs">0</b></span><button class="pill" id="ng">New game</button></div><div class="g" id="g" tabindex="0" aria-label="2048 board. Use arrow keys."></div><div class="hint">Arrow keys or swipe</div></div>
+<div class="pane" id="ps"><div class="bar"><span id="lvs"><button class="lv" data-l="e">Easy</button><button class="lv" data-l="m">Medium</button><button class="lv" data-l="h">Hard</button></span><span>Mistakes<b id="mk">0</b></span><button class="pill" id="ns">New</button></div><div class="sd" id="sd" tabindex="0" aria-label="Sudoku board. Click a cell, then type 1 to 9."></div><div class="np" id="np"></div></div>
 <div class="pane" id="pq"><div class="q"><div class="qt"><span id="qs">Law terms</span><span id="qn"></span></div><div class="qq" id="qq"></div><div id="qo" style="display:flex;flex-direction:column;gap:6px"></div><button class="btn sm nx" id="qx">Next</button></div></div></div>
 <script src="w.js"></script><script>
 var $=W.$,G,S,over=false,best=+W.get('_g2048best',0)||0;
@@ -45,5 +60,25 @@ $('qs').textContent=mine?'Law terms + your '+mine+' concept'+(mine===1?'':'s'):'
 $('qo').innerHTML=ops.map(function(o){return '<button class="op" data-ok="'+(o===cur?1:0)+'">'+W.esc(o[1])+'</button>'}).join('')}
 $('qo').onclick=function(e){var b=e.target.closest('.op');if(!b||b.disabled)return;done++;var ok=b.getAttribute('data-ok')==='1';if(ok)right++;[].forEach.call($('qo').children,function(x){x.disabled=true;if(x.getAttribute('data-ok')==='1')x.classList.add('ok');else if(x===b)x.classList.add('no')});$('qn').textContent=right+' / '+done;$('qx').classList.add('on');$('qx').focus()};
 $('qx').onclick=function(){qi++;ask()};
-document.querySelector('.tabs').onclick=function(e){var t=e.target.getAttribute('data-t');if(!t)return;[].forEach.call(this.children,function(b){b.classList.toggle('on',b===e.target)});$('pg').classList.toggle('on',t==='g');$('pq').classList.toggle('on',t==='q');if(t==='q'&&!$('qq').textContent)ask();if(t==='g')$('g').focus()};
+
+var SD=null,SL=-1;
+function solve(b,cnt){var i=b.indexOf(0);if(i<0)return 1;var r=Math.floor(i/9),c=i%9,br=r-r%3,bc=c-c%3,n=0,ds=[1,2,3,4,5,6,7,8,9];if(!cnt)shuf(ds);
+for(var k=0;k<9;k++){var d=ds[k],ok=true;for(var j=0;j<9&&ok;j++){if(b[r*9+j]===d||b[j*9+c]===d||b[(br+Math.floor(j/3))*9+bc+j%3]===d)ok=false}
+if(ok){b[i]=d;var x=solve(b,cnt);if(!cnt&&x)return 1;n+=x;if(cnt&&n>1){b[i]=0;return n}b[i]=0}}return n}
+function gen(lv){var full=[];for(var i=0;i<81;i++)full.push(0);solve(full,false);var p=full.slice(),idx=[];for(i=0;i<81;i++)idx.push(i);shuf(idx);var target={e:38,m:30,h:25}[lv]||30,left=81;
+for(i=0;i<81&&left>target;i++){var k=idx[i],v=p[k];p[k]=0;if(solve(p.slice(),true)!==1)p[k]=v;else left--}
+SD={lv:lv,a:full,g:p,u:p.slice(),m:0,w:false};SL=-1;W.set('_sdk',SD);sdraw()}
+function sdraw(){if(!SD)return;var sv=SL>=0?SD.u[SL]:0,sr=Math.floor(SL/9),sc=SL%9,h='',cnt={};
+for(var i=0;i<81;i++){var v=SD.u[i];if(v)cnt[v]=(cnt[v]||0)+1;var r=Math.floor(i/9),c=i%9,cl='sc';if(SD.g[i])cl+=' gv';if(i===SL)cl+=' on';else if(sv&&v===sv)cl+=' sm';else if(SL>=0&&(r===sr||c===sc||(Math.floor(r/3)===Math.floor(sr/3)&&Math.floor(c/3)===Math.floor(sc/3))))cl+=' rl';
+if(v&&!SD.g[i]&&v!==SD.a[i])cl+=' bad';h+='<div class="'+cl+'" data-i="'+i+'">'+(v||'')+'</div>'}
+h+='<div class="ov'+(SD.w?' on':'')+'"><span>Solved!</span><button class="btn sm" id="as">New puzzle</button></div>';$('sd').innerHTML=h;$('mk').textContent=SD.m;
+var nh='';for(var d=1;d<=9;d++)nh+='<button data-n="'+d+'"'+(cnt[d]>=9?' class="dn"':'')+'>'+d+'</button>';$('np').innerHTML=nh+'<button class="x" data-n="0">Erase</button>';
+[].forEach.call(document.querySelectorAll('.lv'),function(b){b.classList.toggle('on',b.getAttribute('data-l')===SD.lv)})}
+function put(n){if(!SD||SD.w||SL<0||SD.g[SL])return;if(n&&n!==SD.a[SL]&&SD.u[SL]!==n)SD.m++;SD.u[SL]=n;if(SD.u.join()===SD.a.join())SD.w=true;W.set('_sdk',SD);sdraw()}
+$('sd').onclick=function(e){if(e.target.id==='as'){gen(SD.lv);return}var c=e.target.closest('.sc');if(!c)return;SL=+c.getAttribute('data-i');sdraw();$('sd').focus()};
+$('np').onclick=function(e){var b=e.target.closest('button');if(b)put(+b.getAttribute('data-n'))};
+$('lvs').onclick=function(e){var l=e.target.getAttribute('data-l');if(l)gen(l)};$('ns').onclick=function(){gen(SD?SD.lv:'m')};
+document.addEventListener('keydown',function(e){if(!$('ps').classList.contains('on')||!SD)return;if(/^[1-9]$/.test(e.key)){put(+e.key);return}if(e.key==='Backspace'||e.key==='Delete'||e.key==='0'){e.preventDefault();put(0);return}
+var mv={ArrowLeft:-1,ArrowRight:1,ArrowUp:-9,ArrowDown:9}[e.key];if(mv==null)return;e.preventDefault();if(SL<0)SL=0;else{var n=SL+mv;if(n>=0&&n<81&&!(mv===-1&&SL%9===0)&&!(mv===1&&SL%9===8))SL=n}sdraw()});
+document.querySelector('.tabs').onclick=function(e){var t=e.target.getAttribute('data-t');if(!t)return;[].forEach.call(this.children,function(b){b.classList.toggle('on',b===e.target)});$('pg').classList.toggle('on',t==='g');$('pq').classList.toggle('on',t==='q');$('ps').classList.toggle('on',t==='s');if(t==='s'){if(!SD){var o=W.get('_sdk',null);if(o&&o.a&&o.u){SD=o;sdraw()}else gen('e')}$('sd').focus()}if(t==='q'&&!$('qq').textContent)ask();if(t==='g')$('g').focus()};
 </script></body></html>
