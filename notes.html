@@ -111,6 +111,6 @@ $('bC').onclick=function(){$('bT').select();var ok=function(){$('bM').textConten
 $('bR').onclick=function(){try{var o=JSON.parse($('bT').value);if(!Array.isArray(o.nb)||!o.notes)throw 0;o.nb.forEach(function(x){if(o.notes[x.id])W.set('n:'+x.id,o.notes[x.id])});IX=o.nb;W.set('nb',IX);N=null;$('sheet2').classList.remove('on');rail();side();editor()}catch(e){$('bM').textContent='That code is not a valid backup. Nothing was changed.'}};
 document.addEventListener('keydown',function(e){if(e.key==='Escape')$('sheet2').classList.remove('on')});
 window.addEventListener('pagehide',persist);
-W.on(function(k){if(k==='courses'){rail();side()}});
+W.on(function(k){if(k==='courses'){rail();side()}else if(k==='nb'){IX=W.get('nb',[]);rail();side()}else if(N&&k==='n:'+N.id&&!(document.activeElement&&document.activeElement.closest('#ed'))){N=W.get(k,N);editor()}});
 rail();if(st.n&&ent(st.n)){N=W.get('n:'+st.n,null);pi=st.p||0}side();editor();
 </script></body></html>
