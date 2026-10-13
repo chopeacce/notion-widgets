@@ -1,0 +1,49 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Break</title><link rel="stylesheet" href="w.css"><style>
+.hd{padding-bottom:10px}.tabs{display:flex;gap:4px}
+.pill.on{background:var(--ink);color:var(--bg)}
+.pane{flex:1;min-height:0;display:none;flex-direction:column;align-items:center;justify-content:center;gap:10px}.pane.on{display:flex}
+.bar{display:flex;align-items:center;justify-content:space-between;width:min(100%,300px);font-size:11px;font-weight:700;color:var(--mute)}
+.bar b{color:var(--ink);font-size:15px;font-variant-numeric:tabular-nums;margin-left:5px}
+.g{position:relative;width:min(100%,300px,calc(100vh - 150px));aspect-ratio:1;background:var(--chip);border-radius:14px;padding:6px;display:grid;grid-template-columns:repeat(4,1fr);grid-template-rows:repeat(4,1fr);gap:6px;touch-action:none;outline:0}
+.c{border-radius:9px;background:var(--dot);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:clamp(13px,5vmin,22px);font-variant-numeric:tabular-nums;color:var(--ink);transition:background .1s}
+.c.v2{background:var(--bg)}.c.v4{background:#dcdcd9}.c.v8{background:#bdbdb9}.c.v16{background:#9a9a96;color:#fff}.c.v32{background:#787875;color:#fff}.c.v64{background:#5a5a57;color:#fff}.c.v128{background:#414140;color:#fff}.c.v256{background:#2e2e2d;color:#fff}.c.hi{background:#111;color:#fff}
+.dark .c.v2{background:#3a3a3a}.dark .c.v4{background:#505050}.dark .c.v8{background:#6a6a6a}.dark .c.v16{background:#8a8a8a}.dark .c.v32{background:#a8a8a8;color:#111}.dark .c.v64{background:#c4c4c4;color:#111}.dark .c.v128{background:#dadada;color:#111}.dark .c.v256{background:#ececec;color:#111}.dark .c.hi{background:#fff;color:#111}
+.c.big{font-size:clamp(11px,3.8vmin,17px)}
+.ov{position:absolute;inset:0;border-radius:14px;background:rgba(255,255,255,.82);display:none;flex-direction:column;align-items:center;justify-content:center;gap:10px;font-weight:800;font-size:15px}.dark .ov{background:rgba(32,32,32,.85)}.ov.on{display:flex}
+.hint{font-size:10px;color:var(--mute);font-weight:600}
+.q{width:min(100%,420px);display:flex;flex-direction:column;gap:8px}
+.qt{font-size:10px;font-weight:700;color:var(--mute);letter-spacing:.08em;text-transform:uppercase;display:flex;justify-content:space-between}
+.qq{font-size:17px;font-weight:800;letter-spacing:-.01em;line-height:1.3;margin-bottom:2px}
+.op{border:1px solid var(--line);background:var(--bg);color:var(--ink);font:inherit;font-size:12px;font-weight:600;line-height:1.4;text-align:left;border-radius:11px;padding:9px 12px;cursor:pointer}
+.op:hover{border-color:var(--ink)}.op.ok{background:var(--ink);color:var(--bg);border-color:var(--ink)}.op.no{text-decoration:line-through;color:var(--mute)}.op:disabled{cursor:default}
+.nx{align-self:flex-end;visibility:hidden}.nx.on{visibility:visible}
+</style></head><body><div class="card"><div class="hd"><span>Break</span><span class="tabs"><button class="pill on" data-t="g">2048</button><button class="pill" data-t="q">Quiz</button></span></div>
+<div class="pane on" id="pg"><div class="bar"><span>Score<b id="sc">0</b></span><span>Best<b id="bs">0</b></span><button class="pill" id="ng">New game</button></div><div class="g" id="g" tabindex="0" aria-label="2048 board. Use arrow keys."></div><div class="hint">Arrow keys or swipe</div></div>
+<div class="pane" id="pq"><div class="q"><div class="qt"><span id="qs">Law terms</span><span id="qn"></span></div><div class="qq" id="qq"></div><div id="qo" style="display:flex;flex-direction:column;gap:6px"></div><button class="btn sm nx" id="qx">Next</button></div></div></div>
+<script src="w.js"></script><script>
+var $=W.$,G,S,over=false,best=+W.get('_g2048best',0)||0;
+function rnd(n){return Math.floor(Math.random()*n)}
+function spawn(){var e=[];G.forEach(function(v,i){if(!v)e.push(i)});if(e.length)G[e[rnd(e.length)]]=Math.random()<.9?2:4}
+function fresh(){G=[];for(var i=0;i<16;i++)G.push(0);S=0;over=false;spawn();spawn();draw()}
+function line(a){var o=a.filter(Boolean),r=[],i;for(i=0;i<o.length;i++){if(o[i]===o[i+1]){r.push(o[i]*2);S+=o[i]*2;i++}else r.push(o[i])}while(r.length<4)r.push(0);return r}
+function move(d){if(over)return;var b=G.slice(),i,j,row;for(i=0;i<4;i++){row=[];for(j=0;j<4;j++)row.push(G[d<2?(d===0?i*4+j:i*4+3-j):(d===2?j*4+i:(3-j)*4+i)]);row=line(row);for(j=0;j<4;j++)G[d<2?(d===0?i*4+j:i*4+3-j):(d===2?j*4+i:(3-j)*4+i)]=row[j]}
+if(G.join()!==b.join()){spawn();if(S>best){best=S;W.set('_g2048best',best)}if(stuck())over=true;draw()}}
+function stuck(){for(var i=0;i<16;i++){if(!G[i])return false;if(i%4<3&&G[i]===G[i+1])return false;if(i<12&&G[i]===G[i+4])return false}return true}
+function draw(){$('g').innerHTML=G.map(function(v){return '<div class="c'+(v?' '+(v>256?'hi':'v'+v):'')+(v>999?' big':'')+'">'+(v||'')+'</div>'}).join('')+'<div class="ov'+(over?' on':'')+'"><span>Game over</span><button class="btn sm" id="ag">Play again</button></div>';$('sc').textContent=S;$('bs').textContent=best;W.set('_g2048',{g:G,s:S})}
+document.addEventListener('keydown',function(e){if(!$('pg').classList.contains('on'))return;var d={ArrowLeft:0,ArrowRight:1,ArrowUp:2,ArrowDown:3}[e.key];if(d==null)return;e.preventDefault();move(d)});
+var tx=null,ty=null;$('g').addEventListener('pointerdown',function(e){tx=e.clientX;ty=e.clientY});
+document.addEventListener('pointerup',function(e){if(tx==null)return;var dx=e.clientX-tx,dy=e.clientY-ty;tx=null;if(Math.max(Math.abs(dx),Math.abs(dy))<24)return;move(Math.abs(dx)>Math.abs(dy)?(dx<0?0:1):(dy<0?2:3))});
+$('ng').onclick=fresh;$('g').onclick=function(e){if(e.target.id==='ag')fresh()};
+var sv=W.get('_g2048',null);if(sv&&sv.g&&sv.g.length===16){G=sv.g;S=sv.s||0;over=stuck();draw()}else fresh();
+var BASE=[['Consideration','A bargained-for exchange of something of legal value'],['Mailbox rule','Acceptance is effective when it is sent, not when it is received'],['Parol evidence rule','Bars outside evidence of earlier agreements that contradicts a fully integrated writing'],['Statute of frauds','Certain kinds of contracts must be in a signed writing to be enforceable'],['Promissory estoppel','A promise is enforced because someone reasonably relied on it to their detriment'],['Battery','Intentional harmful or offensive contact with another person'],['Assault','Intentionally causing reasonable apprehension of imminent harmful or offensive contact'],['Res ipsa loquitur','Negligence is inferred from the nature of the accident itself'],['Proximate cause','Legal cause: the harm falls within the foreseeable scope of the risk'],['Negligence per se','Breach is shown by violating a safety statute'],['Respondeat superior','An employer is liable for an employee’s torts within the scope of employment'],['Personal jurisdiction','A court’s power over the parties in the case'],['Subject matter jurisdiction','A court’s power to hear a particular type of case'],['Diversity jurisdiction','Parties are citizens of different states and more than $75,000 is in controversy'],['Erie doctrine','A federal court sitting in diversity applies state substantive law'],['Claim preclusion','A final judgment bars the same parties from relitigating the same claim'],['Summary judgment','Judgment without trial when there is no genuine dispute of material fact'],['Stare decisis','Courts follow precedent when deciding similar cases'],['Dicta','Statements in an opinion that are not necessary to the holding']],
+Q=[],qi=0,right=0,done=0,mine=0;
+function pool(){var P=[],seen={};try{W.get('nb',[]).forEach(function(x){var n=W.get('n:'+x.id,null);if(!n)return;n.pages.forEach(function(p){p.blocks.forEach(function(b){if(b.t==='concept'&&b.f&&b.f.k&&b.f.d){var k=b.f.k.trim(),d=b.f.d.replace(/\s+/g,' ').trim();if(k&&d&&d.length<220&&!seen[k.toLowerCase()]){seen[k.toLowerCase()]=1;P.push([k,d])}}})})})}catch(e){}
+mine=P.length;BASE.forEach(function(b){if(!seen[b[0].toLowerCase()])P.push(b)});return P}
+function shuf(a){for(var i=a.length-1;i>0;i--){var j=rnd(i+1),t=a[i];a[i]=a[j];a[j]=t}return a}
+function ask(){if(!Q.length||qi>=Q.length){Q=shuf(pool());qi=0}var P=Q,cur=P[qi],ops=shuf(P.filter(function(x){return x!==cur})).slice(0,3);ops.push(cur);shuf(ops);
+$('qs').textContent=mine?'Law terms + your '+mine+' concept'+(mine===1?'':'s'):'Law terms';$('qn').textContent=done?right+' / '+done:'';$('qq').textContent=cur[0];$('qx').classList.remove('on');
+$('qo').innerHTML=ops.map(function(o){return '<button class="op" data-ok="'+(o===cur?1:0)+'">'+W.esc(o[1])+'</button>'}).join('')}
+$('qo').onclick=function(e){var b=e.target.closest('.op');if(!b||b.disabled)return;done++;var ok=b.getAttribute('data-ok')==='1';if(ok)right++;[].forEach.call($('qo').children,function(x){x.disabled=true;if(x.getAttribute('data-ok')==='1')x.classList.add('ok');else if(x===b)x.classList.add('no')});$('qn').textContent=right+' / '+done;$('qx').classList.add('on');$('qx').focus()};
+$('qx').onclick=function(){qi++;ask()};
+document.querySelector('.tabs').onclick=function(e){var t=e.target.getAttribute('data-t');if(!t)return;[].forEach.call(this.children,function(b){b.classList.toggle('on',b===e.target)});$('pg').classList.toggle('on',t==='g');$('pq').classList.toggle('on',t==='q');if(t==='q'&&!$('qq').textContent)ask();if(t==='g')$('g').focus()};
+</script></body></html>
