@@ -7,30 +7,67 @@
 .bio{margin-top:6px;font-size:12px;line-height:1.5;color:var(--mute);font-weight:500}
 [contenteditable]{border-radius:6px;cursor:text}[contenteditable]:empty:before{content:attr(data-ph);color:var(--mute)}
 @media (max-aspect-ratio:1/1){.card{flex-direction:column;justify-content:center;text-align:center}.av{width:min(52vw,40vh)}.tx{flex:none}}
-</style></head><body><div class="card"><div class="av"><svg viewBox="40 30 432 432" role="img" aria-label="Profile illustration">
-<path d="M256 52c-84 0-138 52-142 132-2 30-30 40-28 74 2 26 22 34 20 58-2 26-30 34-26 66 3 26 26 34 30 52h292c4-18 27-26 30-52 4-32-24-40-26-66-2-24 18-32 20-58 2-34-26-44-28-74-4-80-58-132-142-132z" fill="#111"/>
-<g fill="none" stroke="#fff" stroke-width="6" stroke-linecap="round">
-<path d="M118 262c14 16 12 40-2 58"/><path d="M110 352c14 14 16 36 6 56"/>
-<path d="M394 262c-14 16-12 40 2 58"/><path d="M402 352c-14 14-16 36-6 56"/>
-</g>
-<path d="M84 520c4-62 42-94 102-104 14-2 28-8 32-22h76c4 14 18 20 32 22 60 10 98 42 102 104z" fill="#111" stroke="#fff" stroke-width="8" stroke-linejoin="round"/>
-<path d="M212 350c14 10 74 10 88 0v46c-14 14-74 14-88 0z" fill="#111" stroke="#fff" stroke-width="8" stroke-linejoin="round"/>
-<path d="M168 204c0-66 38-100 88-100s88 34 88 100v46c0 58-40 98-88 98s-88-40-88-98z" fill="#fff" stroke="#111" stroke-width="7"/>
-<path d="M160 262c-18-30-14-70 0-100 14-40 50-70 96-70 50 0 88 30 100 76 10 30 10 66-4 94-2-30-10-52-24-70-10-14-24-26-42-36-22 26-62 44-98 50-16 14-24 34-28 56z" fill="#111"/>
-<path d="M194 218q22-8 42-1M276 217q20-7 42 1" fill="none" stroke="#111" stroke-width="7" stroke-linecap="round"/>
-<g fill="none" stroke="#111" stroke-width="11" stroke-linejoin="round">
-<rect x="180" y="230" width="68" height="52" rx="20"/>
-<rect x="264" y="230" width="68" height="52" rx="20"/>
-</g>
-<path d="M248 250q8-6 16 0" fill="none" stroke="#111" stroke-width="9" stroke-linecap="round"/>
-<path d="M180 248l-14-6M332 248l14-6" stroke="#111" stroke-width="9" stroke-linecap="round"/>
-<ellipse cx="216" cy="257" rx="8" ry="10" fill="#111"/><ellipse cx="296" cy="257" rx="8" ry="10" fill="#111"/>
-<path d="M256 284v14h-7" fill="none" stroke="#111" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
-<path d="M238 318q18 10 36 0" fill="none" stroke="#111" stroke-width="6" stroke-linecap="round"/>
-</svg></div>
-<div class="tx"><div class="nm" id="nm" contenteditable="plaintext-only" spellcheck="false" data-ph="Your name"></div><div class="bio" id="bio" contenteditable="plaintext-only" spellcheck="false" data-ph="One line about you"></div></div></div>
+.av{padding:0;cursor:pointer;transition:transform .15s}.av:hover{transform:scale(1.03)}
+.box{width:min(340px,94%);gap:10px}.pv{width:84px;height:84px;margin:0 auto;border-radius:50%;border:1px solid var(--line);overflow:hidden;background:#fff;flex:none}.pv svg{width:100%;height:100%;display:block}
+.og{display:flex;flex-direction:column;gap:5px;text-align:left}.ol{font-size:10px;font-weight:700;color:var(--mute);letter-spacing:.06em;text-transform:uppercase}.oc{display:flex;flex-wrap:wrap;gap:4px}
+.oc .pill{font-size:11px;padding:5px 10px}.oc .pill.on{background:var(--ink);color:var(--bg)}</style></head><body><div class="card"><button class="av" id="avb" aria-label="Customize character"><svg viewBox="40 30 432 432" role="img" aria-label="Profile illustration" id="avs"></svg></button>
+<div class="tx"><div class="nm" id="nm" contenteditable="plaintext-only" spellcheck="false" data-ph="Your name"></div><div class="bio" id="bio" contenteditable="plaintext-only" spellcheck="false" data-ph="One line about you"></div></div><div class="sheet" id="sheet"><div class="box"><div class="pv"><svg viewBox="40 30 432 432" id="pvs"></svg></div><div id="opts"></div><div class="rowb"><button class="btn ghost sm" id="png">Save image</button><button class="btn sm" id="done">Done</button></div></div></div></div>
 <script src="w.js"></script><script>
-var $=W.$,p=W.get('profile',{n:W.q.get('name')||'Your name',b:W.q.get('bio')||'Click to edit · saved automatically'});
+var $=W.$;var AV={
+s:{Woman:'w',Man:'m',Cat:'c',Dog:'d'},
+hair:{'Long waves':'lw',Bob:'bob',Bun:'bun','Short':'sh','Side part':'sp',Buzz:'bz'},
+eye:{None:'n',Horn:'h',Round:'r',Sunnies:'s'},
+top:{Sweater:'sw',Tee:'t',Collar:'c',Hoodie:'hd'},
+mouth:{Smile:'s',Grin:'g',Calm:'n'},
+x:{None:'n',Blush:'b',Freckles:'f'},
+mark:{None:'n',Patch:'p',Stripes:'st'}};
+var DEF={s:'w',hair:'lw',eye:'h',top:'sw',mouth:'s',x:'n',mark:'n'};
+var K='#111',S=' stroke="#111" stroke-width="7"';
+function avSVG(c){c=Object.assign({},DEF,c||{});var h='',hum=c.s==='w'||c.s==='m';
+if(hum){if(c.hair==='lw')h+='<path d="M256 52c-84 0-138 52-142 132-2 30-30 40-28 74 2 26 22 34 20 58-2 26-30 34-26 66 3 26 26 34 30 52h292c4-18 27-26 30-52 4-32-24-40-26-66-2-24 18-32 20-58 2-34-26-44-28-74-4-80-58-132-142-132z" fill="#111"/><g fill="none" stroke="#fff" stroke-width="6" stroke-linecap="round"><path d="M118 262c14 16 12 40-2 58"/><path d="M110 352c14 14 16 36 6 56"/><path d="M394 262c-14 16-12 40 2 58"/><path d="M402 352c-14 14-16 36-6 56"/></g>';
+else if(c.hair==='bob')h+='<path d="M256 70c-90 0-126 58-126 132v118c0 18 14 30 32 30h188c18 0 32-12 32-30V202c0-74-36-132-126-132z" fill="#111"/>';
+else if(c.hair==='bun')h+='<circle cx="256" cy="82" r="44" fill="#111"/><path d="M226 96q30-10 60 0" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round"/>'}
+h+='<path d="M222 318v76c0 14 68 14 68 0v-76z" fill="#fff"'+S+'/>';
+if(c.top==='sw')h+='<path d="M84 520c4-62 42-94 102-104 14-2 28-8 32-22h76c4 14 18 20 32 22 60 10 98 42 102 104z" fill="#111" stroke="#fff" stroke-width="8" stroke-linejoin="round"/><path d="M212 350c14 10 74 10 88 0v46c-14 14-74 14-88 0z" fill="#111" stroke="#fff" stroke-width="8" stroke-linejoin="round"/>';
+else if(c.top==='t')h+='<path d="M84 520c4-62 42-94 102-104 14-2 28-8 32-22h76c4 14 18 20 32 22 60 10 98 42 102 104z" fill="#111"/><path d="M218 394q38 30 76 0" fill="none" stroke="#fff" stroke-width="7" stroke-linecap="round"/>';
+else if(c.top==='c')h+='<path d="M84 520c4-62 42-94 102-104 14-2 28-8 32-22h76c4 14 18 20 32 22 60 10 98 42 102 104z" fill="#fff" stroke="#111" stroke-width="7" stroke-linejoin="round"/><path d="M218 392l38 44-46 10-16-40zM294 392l-38 44 46 10 16-40z" fill="#111" stroke="#111" stroke-width="5" stroke-linejoin="round"/><path d="M256 436v84" stroke="#111" stroke-width="6"/><circle cx="256" cy="468" r="5" fill="#111"/><circle cx="256" cy="498" r="5" fill="#111"/>';
+else if(c.top==='hd')h+='<path d="M84 520c4-62 42-94 102-104 14-2 28-8 32-22h76c4 14 18 20 32 22 60 10 98 42 102 104z" fill="#111"/><path d="M176 404c6 34 40 52 80 52s74-18 80-52" fill="none" stroke="#fff" stroke-width="7" stroke-linecap="round"/><path d="M236 446v40M276 446v40" stroke="#fff" stroke-width="6" stroke-linecap="round"/>';
+if(hum){h+='<path d="M168 204c0-66 38-100 88-100s88 34 88 100v46c0 58-40 98-88 98s-88-40-88-98z" fill="#fff"'+S+'/>';
+if(c.hair==='lw')h+='<path d="M160 262c-18-30-14-70 0-100 14-40 50-70 96-70 50 0 88 30 100 76 10 30 10 66-4 94-2-30-10-52-24-70-10-14-24-26-42-36-22 26-62 44-98 50-16 14-24 34-28 56z" fill="#111"/>';
+else if(c.hair==='bob')h+='<path d="M164 224c-6-76 36-126 92-126s98 50 92 126c-34-2-66-10-92-34-26 24-58 32-92 34z" fill="#111"/>';
+else if(c.hair==='bun')h+='<path d="M164 232c-8-82 36-128 92-128s100 46 92 128c-12-44-42-76-92-82-50 6-80 38-92 82z" fill="#111"/>';
+else if(c.hair==='sh')h+='<path d="M162 230c-12-86 34-134 94-134 62 0 106 48 94 134-6-26-16-46-34-58-40 6-96 4-126-12-14 18-24 42-28 70z" fill="#111"/>';
+else if(c.hair==='sp')h+='<path d="M162 236c-14-88 32-140 96-140 66 0 104 52 92 134-8-32-22-54-44-68-34 8-86 8-112-10-18 20-28 50-32 84z" fill="#111"/><path d="M222 104q-8 20-6 46" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round"/>';
+else if(c.hair==='bz')h+='<path d="M170 198c4-62 40-96 86-96s82 34 86 96c-22-18-52-28-86-28s-64 10-86 28z" fill="#111"/>';
+h+=c.s==='m'?'<path d="M192 216q22-10 44-2M276 214q22-8 44 2" fill="none" stroke="#111" stroke-width="10" stroke-linecap="round"/>':'<path d="M194 218q22-8 42-1M276 217q20-7 42 1" fill="none" stroke="#111" stroke-width="7" stroke-linecap="round"/>'}
+else if(c.s==='c'){var ef=c.mark==='p'?'#111':'#fff';h+='<path d="M170 214l-10-110 84 62zM342 214l10-110-84 62z" fill="'+ef+'"'+S+' stroke-linejoin="round"/><path d="M178 178l-4-48 34 26M334 178l4-48-34 26" fill="none" stroke="'+(c.mark==='p'?'#fff':'#111')+'" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/><ellipse cx="256" cy="256" rx="106" ry="94" fill="#fff"'+S+'/>';
+if(c.mark==='st')h+='<path d="M256 166v26M232 170l6 22M280 170l-6 22" stroke="#111" stroke-width="8" stroke-linecap="round"/>'}
+else{h+='<ellipse cx="256" cy="254" rx="100" ry="100" fill="#fff"'+S+'/>';if(c.mark==='p')h+='<ellipse cx="296" cy="252" rx="34" ry="30" fill="#111"/>';if(c.mark==='st')h+='<path d="M256 156c-14 20-14 50 0 70 14-20 14-50 0-70z" fill="#111"/>';
+h+='<path d="M170 200c-36 6-56 70-42 132 20 14 42-6 52-44 6-26 4-58-10-88zM342 200c36 6 56 70 42 132-20 14-42-6-52-44-6-26-4-58 10-88z" fill="#111" stroke="#111" stroke-width="5" stroke-linejoin="round"/>'}
+if(c.x==='b')h+='<ellipse cx="200" cy="296" rx="18" ry="10" fill="#e4e4e2"/><ellipse cx="312" cy="296" rx="18" ry="10" fill="#e4e4e2"/>';
+if(c.x==='f')h+='<g fill="#111"><circle cx="196" cy="292" r="3"/><circle cx="208" cy="300" r="3"/><circle cx="186" cy="302" r="3"/><circle cx="316" cy="292" r="3"/><circle cx="304" cy="300" r="3"/><circle cx="326" cy="302" r="3"/></g>';
+if(c.s==='d')h+='<ellipse cx="256" cy="306" rx="46" ry="34" fill="#fff"'+S+'/>';
+h+='<ellipse cx="216" cy="257" rx="8" ry="10" fill="#111" stroke="#fff" stroke-width="3"/><ellipse cx="296" cy="257" rx="8" ry="10" fill="#111" stroke="#fff" stroke-width="3"/>';
+if(c.s==='w')h+='<path d="M204 250l-8-5M308 250l8-5" stroke="#111" stroke-width="4" stroke-linecap="round"/>';
+if(c.eye==='h')h+='<g fill="none" stroke="#111" stroke-width="11" stroke-linejoin="round"><rect x="180" y="230" width="68" height="52" rx="20"/><rect x="264" y="230" width="68" height="52" rx="20"/></g><path d="M248 250q8-6 16 0" fill="none" stroke="#111" stroke-width="9" stroke-linecap="round"/><path d="M180 248l-14-6M332 248l14-6" stroke="#111" stroke-width="9" stroke-linecap="round"/>';
+else if(c.eye==='r')h+='<g fill="none" stroke="#111" stroke-width="6"><circle cx="216" cy="257" r="30"/><circle cx="296" cy="257" r="30"/></g><path d="M246 254q10-8 20 0M186 250l-18-6M326 250l18-6" fill="none" stroke="#111" stroke-width="6" stroke-linecap="round"/>';
+else if(c.eye==='s')h+='<g fill="#111" stroke="#111" stroke-width="6" stroke-linejoin="round"><path d="M176 236h76v18c0 22-14 34-38 34s-38-12-38-34z"/><path d="M260 236h76v18c0 22-14 34-38 34s-38-12-38-34z"/></g><path d="M250 242h12M176 242l-12-4M336 242l12-4" stroke="#111" stroke-width="7" stroke-linecap="round"/><path d="M190 250l14-8M274 250l14-8" stroke="#fff" stroke-width="4" stroke-linecap="round"/>';
+if(hum){h+='<path d="M256 284v14h-7" fill="none" stroke="#111" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>';
+h+=c.mouth==='g'?'<path d="M234 316q22 2 44 0q-4 22-22 22t-22-22z" fill="#111" stroke="#111" stroke-width="4" stroke-linejoin="round"/>':c.mouth==='n'?'<path d="M240 322h32" stroke="#111" stroke-width="6" stroke-linecap="round"/>':'<path d="M238 318q18 10 36 0" fill="none" stroke="#111" stroke-width="6" stroke-linecap="round"/>'}
+else if(c.s==='c'){h+='<path d="M246 282h20l-10 11z" fill="#111" stroke="#111" stroke-width="4" stroke-linejoin="round"/><g fill="none" stroke="#111" stroke-width="5" stroke-linecap="round">'+(c.mouth==='n'?'<path d="M256 294v8M244 304h24"/>':c.mouth==='g'?'<path d="M256 293v6"/><path d="M238 302q18 24 36 0z" fill="#111"/>':'<path d="M256 293v6q-8 12-20 6M256 299q8 12 20 6"/>')+'<path d="M196 292l-50-8M196 304l-48 6M316 292l50-8M316 304l48 6"/></g>'}
+else{h+='<ellipse cx="256" cy="292" rx="15" ry="10" fill="#111"/><g fill="none" stroke="#111" stroke-width="5" stroke-linecap="round">'+(c.mouth==='n'?'<path d="M256 302v14M240 318h32"/>':c.mouth==='g'?'<path d="M256 302v8"/><path d="M234 312q22 34 44 0z" fill="#111"/>':'<path d="M256 302v12q-10 12-22 4M256 314q10 12 22 4"/>')+'</g>'}
+return h}
+
+var LB={s:'Character',hair:'Hair',eye:'Eyewear',top:'Top',mouth:'Mouth',x:'Cheeks',mark:'Markings'},cfg=Object.assign({},DEF,W.get('avatar',{}));
+function paint(){$('avs').innerHTML=avSVG(cfg);if($('sheet').classList.contains('on'))$('pvs').innerHTML=avSVG(cfg)}
+function opts(){var hum=cfg.s==='w'||cfg.s==='m',ks=['s',hum?'hair':'mark','eye','top','mouth'].concat(hum?['x']:[]);
+$('opts').innerHTML=ks.map(function(k){return '<div class="og"><div class="ol">'+LB[k]+'</div><div class="oc">'+Object.keys(AV[k]).map(function(n){var v=AV[k][n];return '<button class="pill'+(cfg[k]===v?' on':'')+'" data-k="'+k+'" data-v="'+v+'">'+n+'</button>'}).join('')+'</div></div>'}).join('')}
+$('avb').onclick=function(){$('sheet').classList.add('on');opts();paint()};
+$('opts').onclick=function(e){var k=e.target.getAttribute('data-k');if(!k)return;cfg[k]=e.target.getAttribute('data-v');if(k==='s'){if(cfg.s==='m'&&(cfg.hair==='lw'||cfg.hair==='bob'||cfg.hair==='bun'))cfg.hair='sh';if(cfg.s==='w'&&(cfg.hair==='sh'||cfg.hair==='sp'||cfg.hair==='bz'))cfg.hair='lw'}W.set('avatar',cfg);opts();paint()};
+$('done').onclick=function(){$('sheet').classList.remove('on')};$('sheet').onclick=function(e){if(e.target===this)this.classList.remove('on')};
+$('png').onclick=function(){var x='<svg xmlns="http://www.w3.org/2000/svg" viewBox="40 30 432 432" width="512" height="512"><rect x="40" y="30" width="432" height="432" fill="#fff"/>'+avSVG(cfg)+'</svg>',im=new Image();im.onload=function(){var cv=document.createElement('canvas');cv.width=cv.height=512;cv.getContext('2d').drawImage(im,0,0,512,512);var a=document.createElement('a');a.href=cv.toDataURL('image/png');a.download='my-character.png';document.body.appendChild(a);a.click();a.remove()};im.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(x)};
+W.on(function(k){if(k==='avatar'){cfg=Object.assign({},DEF,W.get('avatar',{}));paint();if($('sheet').classList.contains('on'))opts()}});paint();
+var p=W.get('profile',{n:W.q.get('name')||'Your name',b:W.q.get('bio')||'Click to edit · saved automatically'});
 $('nm').textContent=p.n;$('bio').textContent=p.b;
 function sv(){p={n:$('nm').textContent.trim(),b:$('bio').textContent.trim()};W.set('profile',p)}
 ['nm','bio'].forEach(function(i){$(i).oninput=sv;$(i).onkeydown=function(e){if(e.key==='Enter'){e.preventDefault();this.blur()}}});
