@@ -37,12 +37,12 @@
 .pr.p1{background:var(--ink);color:var(--bg)}
 .meta{font-size:10px;color:var(--mute);font-weight:600;flex:none}
 @media (max-width:560px){.wrap{flex-direction:column;gap:10px}.side{width:auto;max-width:none;min-width:0;border-left:0;padding-left:0;border-top:1px solid var(--line);padding-top:10px;flex:1}.cal{flex:1.3}}
-</style></head><body><div class="card"><div class="wrap">
+.chip.k-red{background:#e5484d;color:#fff;box-shadow:none}.chip.k-yellow{background:#fbe58a;color:#3d3200;box-shadow:none}.chip.k-blue{background:#cfe2ff;color:#12305c;box-shadow:none}.chip.k-green{background:#cdebd4;color:#143d22;box-shadow:none}.it[class*=k-] .t:before{content:'';display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:7px;vertical-align:middle;position:relative;top:-1px}.it.k-red .t{color:#d93036;font-weight:700}.it.k-red .t:before{background:#e5484d}.it.k-yellow .t:before{background:#f2c94c}.it.k-blue .t:before{background:#6ea8fe}.it.k-green .t:before{background:#5fbf7a}.it.dn_[class*=k-] .t{color:var(--mute);font-weight:inherit}</style></head><body><div class="card"><div class="wrap">
 <div class="cal"><div class="nav"><b id="ttl"></b><button class="ib" id="tdy">Today</button><button class="ib" id="prev" aria-label="Previous month">‹</button><button class="ib" id="next" aria-label="Next month">›</button><button class="ib" id="bk" aria-label="Backup and restore">⋯</button></div>
 <div class="dow"><span>S</span><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span></div><div class="grid" id="grid"></div></div>
 <div class="side"><div class="tabs"><button class="tab" data-tab="inbox">Tasks</button><button class="tab" data-tab="today">Today</button><button class="tab" data-tab="done">Done</button></div>
 <input class="add" id="add" maxlength="80" aria-label="New task"><div class="list" id="list"></div></div></div>
-<div class="sheet" id="sheet"><div class="box"><h3>Edit task</h3><label>Title<input id="eT" maxlength="80"></label><label>Date<input type="date" id="eD"></label><label>End<input type="date" id="eE"></label><label>Priority<select id="eP"><option value="1">High</option><option value="2">Mid</option><option value="3">Low</option></select></label><label>Course<select id="eC"></select></label>
+<div class="sheet" id="sheet"><div class="box"><h3>Edit task</h3><label>Title<input id="eT" maxlength="80"></label><label>Date<input type="date" id="eD"></label><label>End<input type="date" id="eE"></label><label>Priority<select id="eP"><option value="1">High</option><option value="2">Mid</option><option value="3">Low</option></select></label><label>Color<select id="eK"><option value="">Default</option><option value="red">Red (exam / deadline)</option><option value="yellow">Yellow</option><option value="blue">Blue</option><option value="green">Green</option></select></label><label>Course<select id="eC"></select></label>
 <div class="rowb"><button class="btn ghost sm" id="eDel">Delete</button><button class="btn sm" id="eOk">Save</button></div></div></div>
 <div class="sheet" id="sheet2"><div class="box"><h3>Backup</h3><div class="sub" id="bM">Copy this code and keep it somewhere safe. To restore, paste a code here and press Restore.</div><textarea id="bT" rows="5" spellcheck="false" aria-label="Backup code"></textarea>
 <div class="rowb"><button class="btn ghost sm" id="bR">Restore</button><button class="btn sm" id="bC">Copy</button></div></div></div></div>
@@ -51,8 +51,8 @@ var $=W.$,T=W.get('tasks',[]),view=new Date(),sel=null,tab='inbox',cur=null,drag
 function save(){W.set('tasks',T)}function td(){return W.iso(new Date())}function find(id){return T.filter(function(t){return t.id===id})[0]}
 function sd(s){var d=W.day(s);return (d.getMonth()+1)+'/'+d.getDate()}
 function add(k,n){var d=W.day(k);d.setDate(d.getDate()+n);return W.iso(d)}function diff(a,b){return Math.round((W.day(b)-W.day(a))/864e5)}
-function chip(t,seg,lab){seg=seg||'one';return '<div class="chip p'+t.p+(t.done?' dn_':'')+(seg==='one'?'':' '+seg)+'" draggable="true" data-id="'+t.id+'" title="'+W.esc(t.t)+'">'+(lab===false?'&nbsp;':W.esc(t.t))+(seg==='one'||seg==='end'?'<i class="rz"></i>':'')+'</div>'}
-function item(t){return '<div class="it'+(t.done?' dn_':'')+'" draggable="true" data-id="'+t.id+'"><button class="ck'+(t.done?' on':'')+'" data-ck="1" aria-label="Mark done"></button><span class="t">'+W.esc(t.t)+'</span>'+(t.d?'<span class="meta">'+sd(t.d)+(t.e?'–'+sd(t.e):'')+'</span>':'')+'<button class="pr p'+t.p+'" data-pr="1" aria-label="Priority">'+PL[t.p]+'</button></div>'}
+function chip(t,seg,lab){seg=seg||'one';return '<div class="chip p'+t.p+(t.k?' k-'+t.k:'')+(t.done?' dn_':'')+(seg==='one'?'':' '+seg)+'" draggable="true" data-id="'+t.id+'" title="'+W.esc(t.t)+'">'+(lab===false?'&nbsp;':W.esc(t.t))+(seg==='one'||seg==='end'?'<i class="rz"></i>':'')+'</div>'}
+function item(t){return '<div class="it'+(t.k?' k-'+t.k:'')+(t.done?' dn_':'')+'" draggable="true" data-id="'+t.id+'"><button class="ck'+(t.done?' on':'')+'" data-ck="1" aria-label="Mark done"></button><span class="t">'+W.esc(t.t)+'</span>'+(t.d?'<span class="meta">'+sd(t.d)+(t.e?'–'+sd(t.e):'')+'</span>':'')+'<button class="pr p'+t.p+'" data-pr="1" aria-label="Priority">'+PL[t.p]+'</button></div>'}
 function render(){var y=view.getFullYear(),m=view.getMonth(),first=new Date(y,m,1),weeks=Math.ceil((first.getDay()+new Date(y,m+1,0).getDate())/7),h='',by={},today=td();
 $('ttl').textContent=view.toLocaleDateString(W.lang,{month:'long',year:'numeric'});
 var multi=T.filter(function(t){return t.d&&t.e&&t.e>t.d}).sort(function(a,b){return a.d<b.d?-1:a.d>b.d?1:a.id<b.id?-1:1}),lane={},ends=[];
@@ -70,14 +70,14 @@ else{L=T.filter(function(t){return t.done}).slice(-40).reverse();msg='Finished t
 $('list').innerHTML=L.length?L.map(item).join(''):'<div class="empty">'+msg+'</div>';
 [].forEach.call(document.querySelectorAll('.tab'),function(b){b.classList.toggle('on',b.getAttribute('data-tab')===tab)});
 $('add').placeholder=sel?'Add to '+sd(sel)+' — press Enter':(tab==='today'?'Add for today — press Enter':'Add a task — press Enter')}
-function open(t){cur=t;$('eT').value=t.t;$('eD').value=t.d||'';$('eE').value=t.e||'';$('eP').value=t.p;$('eC').innerHTML=W.opts(t.c);$('sheet').classList.add('on');$('eT').focus()}
+function open(t){cur=t;$('eT').value=t.t;$('eD').value=t.d||'';$('eE').value=t.e||'';$('eP').value=t.p;$('eK').value=t.k||'';$('eC').innerHTML=W.opts(t.c);$('sheet').classList.add('on');$('eT').focus()}
 function close(){$('sheet').classList.remove('on');cur=null}
 $('list').onclick=function(e){var it=e.target.closest('.it');if(!it)return;var t=find(it.getAttribute('data-id'));if(!t)return;
 if(e.target.getAttribute('data-ck')){t.done=!t.done;save();render()}else if(e.target.getAttribute('data-pr')){t.p=t.p%3+1;save();render()}else open(t)};
 $('grid').onclick=function(e){if(rzd){rzd=false;return}var c=e.target.closest('.chip');if(c){var t=find(c.getAttribute('data-id'));if(t)open(t);return}
 var cell=e.target.closest('.cell');if(!cell)return;var k=cell.getAttribute('data-d');sel=sel===k?null:k;render();if(sel)$('add').focus()};
 $('add').onkeydown=function(e){if(e.isComposing||e.keyCode===229)return;if(e.key==='Escape'){sel=null;render();return}if(e.key!=='Enter')return;var v=this.value.trim();if(!v)return;
-T.push({id:W.uid(),t:v,d:sel||(tab==='today'?td():null),p:2,c:'',done:false});if(tab==='done')tab='inbox';this.value='';save();render()};
+var k0='';if(/!$/.test(v)&&v.replace(/[\s!]+$/,'')){v=v.replace(/[\s!]+$/,'');k0='red'}T.push({id:W.uid(),t:v,d:sel||(tab==='today'?td():null),p:k0?1:2,c:'',k:k0,done:false});if(tab==='done')tab='inbox';this.value='';save();render()};
 document.querySelector('.tabs').onclick=function(e){var k=e.target.getAttribute('data-tab');if(k){tab=k;render()}};
 $('prev').onclick=function(){view=new Date(view.getFullYear(),view.getMonth()-1,1);render()};
 $('next').onclick=function(){view=new Date(view.getFullYear(),view.getMonth()+1,1);render()};
@@ -98,7 +98,7 @@ $('bk').onclick=function(){$('bT').value=JSON.stringify({tasks:T,courses:W.cours
 $('sheet2').onclick=function(e){if(e.target===this)this.classList.remove('on')};
 $('bC').onclick=function(){$('bT').select();var ok=function(){$('bM').textContent='Copied. Paste it into a note to keep it.'};if(navigator.clipboard)navigator.clipboard.writeText($('bT').value).then(ok,function(){document.execCommand('copy');ok()});else{document.execCommand('copy');ok()}};
 $('bR').onclick=function(){try{var o=JSON.parse($('bT').value);if(!Array.isArray(o.tasks))throw 0;T=o.tasks;save();if(Array.isArray(o.courses))W.set('courses',o.courses);if(Array.isArray(o.log))W.set('log',o.log);$('sheet2').classList.remove('on');render()}catch(e){$('bM').textContent='That code is not a valid backup. Nothing was changed.'}};
-$('eOk').onclick=function(){if(!cur)return;var v=$('eT').value.trim();if(v)cur.t=v;cur.d=$('eD').value||null;cur.e=cur.d&&$('eE').value>cur.d?$('eE').value:null;cur.p=+$('eP').value;cur.c=$('eC').value;save();close();render()};
+$('eOk').onclick=function(){if(!cur)return;var v=$('eT').value.trim();if(v)cur.t=v;cur.d=$('eD').value||null;cur.e=cur.d&&$('eE').value>cur.d?$('eE').value:null;cur.p=+$('eP').value;cur.k=$('eK').value||'';cur.c=$('eC').value;save();close();render()};
 $('eDel').onclick=function(){if(!cur)return;var id=cur.id;T=T.filter(function(t){return t.id!==id});save();close();render()};
 document.addEventListener('keydown',function(e){if(e.isComposing||e.keyCode===229)return;if(e.key==='Escape'){close();$('sheet2').classList.remove('on')}if(e.key==='Enter'&&cur&&e.target.id!=='add')$('eOk').click()});
 W.on(function(k){if(k==='tasks'&&!cur)T=W.get('tasks',[]);if(!cur)render()});render();
