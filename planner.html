@@ -19,6 +19,9 @@
 .chip.p1{background:var(--ink);color:var(--bg)}
 .chip.p3{background:transparent;color:var(--mute);box-shadow:inset 0 0 0 1px var(--line)}
 .chip.dn_{text-decoration:line-through;opacity:.45}
+.chip{position:relative;min-height:18px}.chip.ph{visibility:hidden}
+.chip.mid,.chip.end{margin-left:-4px;border-top-left-radius:0;border-bottom-left-radius:0}.chip.start,.chip.mid{margin-right:-4px;border-top-right-radius:0;border-bottom-right-radius:0}
+.rz{position:absolute;right:0;top:0;bottom:0;width:8px;cursor:ew-resize;touch-action:none}.chip:hover .rz{background:linear-gradient(90deg,transparent,rgba(128,128,128,.45))}
 .more{font-size:10px;color:var(--mute);padding-left:4px;font-weight:600}
 .tabs{display:flex;gap:4px;margin-bottom:10px}
 .tab{border:0;border-radius:8px;background:var(--chip);color:var(--mute);font:inherit;font-size:11px;font-weight:700;padding:5px 10px;cursor:pointer}
@@ -39,7 +42,7 @@
 <div class="dow"><span>S</span><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span></div><div class="grid" id="grid"></div></div>
 <div class="side"><div class="tabs"><button class="tab" data-tab="inbox">Tasks</button><button class="tab" data-tab="today">Today</button><button class="tab" data-tab="done">Done</button></div>
 <input class="add" id="add" maxlength="80" aria-label="New task"><div class="list" id="list"></div></div></div>
-<div class="sheet" id="sheet"><div class="box"><h3>Edit task</h3><label>Title<input id="eT" maxlength="80"></label><label>Date<input type="date" id="eD"></label><label>Priority<select id="eP"><option value="1">High</option><option value="2">Mid</option><option value="3">Low</option></select></label><label>Course<select id="eC"></select></label>
+<div class="sheet" id="sheet"><div class="box"><h3>Edit task</h3><label>Title<input id="eT" maxlength="80"></label><label>Date<input type="date" id="eD"></label><label>End<input type="date" id="eE"></label><label>Priority<select id="eP"><option value="1">High</option><option value="2">Mid</option><option value="3">Low</option></select></label><label>Course<select id="eC"></select></label>
 <div class="rowb"><button class="btn ghost sm" id="eDel">Delete</button><button class="btn sm" id="eOk">Save</button></div></div></div>
 <div class="sheet" id="sheet2"><div class="box"><h3>Backup</h3><div class="sub" id="bM">Copy this code and keep it somewhere safe. To restore, paste a code here and press Restore.</div><textarea id="bT" rows="5" spellcheck="false" aria-label="Backup code"></textarea>
 <div class="rowb"><button class="btn ghost sm" id="bR">Restore</button><button class="btn sm" id="bC">Copy</button></div></div></div></div>
@@ -47,13 +50,19 @@
 var $=W.$,T=W.get('tasks',[]),view=new Date(),sel=null,tab='inbox',cur=null,drag=null,PL=['','H','M','L'];view=new Date(view.getFullYear(),view.getMonth(),1);
 function save(){W.set('tasks',T)}function td(){return W.iso(new Date())}function find(id){return T.filter(function(t){return t.id===id})[0]}
 function sd(s){var d=W.day(s);return (d.getMonth()+1)+'/'+d.getDate()}
-function chip(t){return '<div class="chip p'+t.p+(t.done?' dn_':'')+'" draggable="true" data-id="'+t.id+'" title="'+W.esc(t.t)+'">'+W.esc(t.t)+'</div>'}
-function item(t){return '<div class="it'+(t.done?' dn_':'')+'" draggable="true" data-id="'+t.id+'"><button class="ck'+(t.done?' on':'')+'" data-ck="1" aria-label="Mark done"></button><span class="t">'+W.esc(t.t)+'</span>'+(t.d?'<span class="meta">'+sd(t.d)+'</span>':'')+'<button class="pr p'+t.p+'" data-pr="1" aria-label="Priority">'+PL[t.p]+'</button></div>'}
+function add(k,n){var d=W.day(k);d.setDate(d.getDate()+n);return W.iso(d)}function diff(a,b){return Math.round((W.day(b)-W.day(a))/864e5)}
+function chip(t,seg,lab){seg=seg||'one';return '<div class="chip p'+t.p+(t.done?' dn_':'')+(seg==='one'?'':' '+seg)+'" draggable="true" data-id="'+t.id+'" title="'+W.esc(t.t)+'">'+(lab===false?'&nbsp;':W.esc(t.t))+(seg==='one'||seg==='end'?'<i class="rz"></i>':'')+'</div>'}
+function item(t){return '<div class="it'+(t.done?' dn_':'')+'" draggable="true" data-id="'+t.id+'"><button class="ck'+(t.done?' on':'')+'" data-ck="1" aria-label="Mark done"></button><span class="t">'+W.esc(t.t)+'</span>'+(t.d?'<span class="meta">'+sd(t.d)+(t.e?'–'+sd(t.e):'')+'</span>':'')+'<button class="pr p'+t.p+'" data-pr="1" aria-label="Priority">'+PL[t.p]+'</button></div>'}
 function render(){var y=view.getFullYear(),m=view.getMonth(),first=new Date(y,m,1),weeks=Math.ceil((first.getDay()+new Date(y,m+1,0).getDate())/7),h='',by={},today=td();
 $('ttl').textContent=view.toLocaleDateString(W.lang,{month:'long',year:'numeric'});
-T.forEach(function(t){if(t.d)(by[t.d]=by[t.d]||[]).push(t)});
+var multi=T.filter(function(t){return t.d&&t.e&&t.e>t.d}).sort(function(a,b){return a.d<b.d?-1:a.d>b.d?1:a.id<b.id?-1:1}),lane={},ends=[];
+multi.forEach(function(t){var i=0;while(ends[i]&&ends[i]>=t.d)i++;ends[i]=t.e;lane[t.id]=i});
+T.forEach(function(t){if(t.d&&!(t.e&&t.e>t.d))(by[t.d]=by[t.d]||[]).push(t)});
 for(var i=0;i<weeks*7;i++){var d=new Date(y,m,1-first.getDay()+i),k=W.iso(d),a=(by[k]||[]).sort(function(a,b){return a.done-b.done||a.p-b.p});
-h+='<div class="cell'+(d.getMonth()!==m?' out':'')+(k===today?' today':'')+(k===sel?' sel':'')+'" data-d="'+k+'"><div class="dn">'+d.getDate()+'</div>'+a.slice(0,3).map(chip).join('')+(a.length>3?'<div class="more">+'+(a.length-3)+'</div>':'')+'</div>'}
+var ms=multi.filter(function(t){return t.d<=k&&k<=t.e}),rows=[],mx=-1,j;ms.forEach(function(t){mx=Math.max(mx,lane[t.id])});
+for(j=0;j<=mx;j++){var mt=ms.filter(function(t){return lane[t.id]===j})[0];rows.push(mt?chip(mt,mt.d===k?'start':mt.e===k?'end':'mid',mt.d===k||d.getDay()===0||i===0):'<div class="chip ph">&nbsp;</div>')}
+a.forEach(function(t){rows.push(chip(t))});var tot=ms.length+a.length;
+h+='<div class="cell'+(d.getMonth()!==m?' out':'')+(k===today?' today':'')+(k===sel?' sel':'')+'" data-d="'+k+'"><div class="dn">'+d.getDate()+'</div>'+rows.slice(0,3).join('')+(rows.length>3?'<div class="more">+'+(rows.length-3)+'</div>':'')+'</div>'}
 $('grid').innerHTML=h;
 var L,msg;if(tab==='inbox'){L=T.filter(function(t){return !t.d&&!t.done});msg='No unscheduled tasks.<br>Type above, then drag a task onto a date.'}
 else if(tab==='today'){L=T.filter(function(t){return t.d&&t.d<=today&&!t.done}).sort(function(a,b){return a.p-b.p||(a.d<b.d?-1:1)});msg='Nothing due today.'}
@@ -61,11 +70,11 @@ else{L=T.filter(function(t){return t.done}).slice(-40).reverse();msg='Finished t
 $('list').innerHTML=L.length?L.map(item).join(''):'<div class="empty">'+msg+'</div>';
 [].forEach.call(document.querySelectorAll('.tab'),function(b){b.classList.toggle('on',b.getAttribute('data-tab')===tab)});
 $('add').placeholder=sel?'Add to '+sd(sel)+' — press Enter':(tab==='today'?'Add for today — press Enter':'Add a task — press Enter')}
-function open(t){cur=t;$('eT').value=t.t;$('eD').value=t.d||'';$('eP').value=t.p;$('eC').innerHTML=W.opts(t.c);$('sheet').classList.add('on');$('eT').focus()}
+function open(t){cur=t;$('eT').value=t.t;$('eD').value=t.d||'';$('eE').value=t.e||'';$('eP').value=t.p;$('eC').innerHTML=W.opts(t.c);$('sheet').classList.add('on');$('eT').focus()}
 function close(){$('sheet').classList.remove('on');cur=null}
 $('list').onclick=function(e){var it=e.target.closest('.it');if(!it)return;var t=find(it.getAttribute('data-id'));if(!t)return;
 if(e.target.getAttribute('data-ck')){t.done=!t.done;save();render()}else if(e.target.getAttribute('data-pr')){t.p=t.p%3+1;save();render()}else open(t)};
-$('grid').onclick=function(e){var c=e.target.closest('.chip');if(c){var t=find(c.getAttribute('data-id'));if(t)open(t);return}
+$('grid').onclick=function(e){if(rzd){rzd=false;return}var c=e.target.closest('.chip');if(c){var t=find(c.getAttribute('data-id'));if(t)open(t);return}
 var cell=e.target.closest('.cell');if(!cell)return;var k=cell.getAttribute('data-d');sel=sel===k?null:k;render();if(sel)$('add').focus()};
 $('add').onkeydown=function(e){if(e.isComposing||e.keyCode===229)return;if(e.key==='Escape'){sel=null;render();return}if(e.key!=='Enter')return;var v=this.value.trim();if(!v)return;
 T.push({id:W.uid(),t:v,d:sel||(tab==='today'?td():null),p:2,c:'',done:false});if(tab==='done')tab='inbox';this.value='';save();render()};
@@ -77,15 +86,19 @@ document.addEventListener('dragstart',function(e){var el=e.target.closest&&e.tar
 function clr(){[].forEach.call(document.querySelectorAll('.over'),function(x){x.classList.remove('over')})}
 document.addEventListener('dragend',function(){drag=null;clr()});
 $('grid').addEventListener('dragover',function(e){var c=e.target.closest('.cell');if(!c||!drag)return;e.preventDefault();if(!c.classList.contains('over')){clr();c.classList.add('over')}});
-$('grid').addEventListener('drop',function(e){var c=e.target.closest('.cell'),t=find(drag);if(!c||!t)return;e.preventDefault();t.d=c.getAttribute('data-d');drag=null;save();render()});
+$('grid').addEventListener('drop',function(e){var c=e.target.closest('.cell'),t=find(drag);if(!c||!t)return;e.preventDefault();var nd=c.getAttribute('data-d');if(t.e&&t.d)t.e=add(t.e,diff(t.d,nd));t.d=nd;drag=null;save();render()});
+var rz=null,rzd=false;
+$('grid').addEventListener('pointerdown',function(e){if(!e.target.classList.contains('rz'))return;e.preventDefault();rz=find(e.target.parentNode.getAttribute('data-id'))});
+document.addEventListener('pointermove',function(e){if(!rz)return;var el=document.elementFromPoint(e.clientX,e.clientY),c=el&&el.closest('.cell');if(!c)return;var k=c.getAttribute('data-d'),ne=k>rz.d?k:null;if(k>=rz.d&&ne!==(rz.e||null)){rz.e=ne;rzd=true;render()}});
+document.addEventListener('pointerup',function(){if(!rz)return;rz=null;save();setTimeout(function(){rzd=false},50)});
 $('list').addEventListener('dragover',function(e){if(!drag||tab==='done')return;e.preventDefault();clr();this.classList.add('over')});
-$('list').addEventListener('drop',function(e){var t=find(drag);if(!t||tab==='done')return;e.preventDefault();t.d=tab==='today'?td():null;drag=null;save();clr();render()});
+$('list').addEventListener('drop',function(e){var t=find(drag);if(!t||tab==='done')return;e.preventDefault();var nd2=tab==='today'?td():null;if(nd2&&t.e&&t.d)t.e=add(t.e,diff(t.d,nd2));else t.e=null;t.d=nd2;drag=null;save();clr();render()});
 $('sheet').onclick=function(e){if(e.target===this)close()};
 $('bk').onclick=function(){$('bT').value=JSON.stringify({tasks:T,courses:W.courses(),log:W.get('log',[])});$('sheet2').classList.add('on');$('bT').select()};
 $('sheet2').onclick=function(e){if(e.target===this)this.classList.remove('on')};
 $('bC').onclick=function(){$('bT').select();var ok=function(){$('bM').textContent='Copied. Paste it into a note to keep it.'};if(navigator.clipboard)navigator.clipboard.writeText($('bT').value).then(ok,function(){document.execCommand('copy');ok()});else{document.execCommand('copy');ok()}};
 $('bR').onclick=function(){try{var o=JSON.parse($('bT').value);if(!Array.isArray(o.tasks))throw 0;T=o.tasks;save();if(Array.isArray(o.courses))W.set('courses',o.courses);if(Array.isArray(o.log))W.set('log',o.log);$('sheet2').classList.remove('on');render()}catch(e){$('bM').textContent='That code is not a valid backup. Nothing was changed.'}};
-$('eOk').onclick=function(){if(!cur)return;var v=$('eT').value.trim();if(v)cur.t=v;cur.d=$('eD').value||null;cur.p=+$('eP').value;cur.c=$('eC').value;save();close();render()};
+$('eOk').onclick=function(){if(!cur)return;var v=$('eT').value.trim();if(v)cur.t=v;cur.d=$('eD').value||null;cur.e=cur.d&&$('eE').value>cur.d?$('eE').value:null;cur.p=+$('eP').value;cur.c=$('eC').value;save();close();render()};
 $('eDel').onclick=function(){if(!cur)return;var id=cur.id;T=T.filter(function(t){return t.id!==id});save();close();render()};
 document.addEventListener('keydown',function(e){if(e.isComposing||e.keyCode===229)return;if(e.key==='Escape'){close();$('sheet2').classList.remove('on')}if(e.key==='Enter'&&cur&&e.target.id!=='add')$('eOk').click()});
 W.on(function(k){if(k==='tasks'&&!cur)T=W.get('tasks',[]);if(!cur)render()});render();
