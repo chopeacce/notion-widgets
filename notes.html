@@ -85,13 +85,13 @@
 .fb button{border:0;background:transparent;color:var(--ink);font:inherit;font-size:12px;font-weight:700;min-width:26px;height:26px;border-radius:7px;cursor:pointer;padding:0 6px}
 .fb button:hover{background:var(--chip)}.fb .sep{width:1px;height:16px;background:var(--line);margin:0 3px}.fb input{width:200px;font-size:12px;padding:5px 8px}
 @media (max-width:720px){.card{flex-direction:column}.rail{width:auto;flex-direction:row;border-right:0;border-bottom:1px solid var(--line);padding:10px;gap:4px}.lb{display:none}.mid{width:auto;border-right:0;flex:1}.ed{display:none}.card.open .rail,.card.open .mid{display:none}.card.open .ed{display:flex}.back{display:inline-block}.eh{padding:14px 14px 8px}.body{padding:6px 14px 12px}.addb{padding:10px 14px 12px}.fr{grid-template-columns:74px minmax(0,1fr)}}
-</style></head><body><div class="card" id="card">
+.rt a{text-decoration:underline;cursor:pointer}.rt .pdf{margin:8px 0;border:1px solid var(--line,#ececea);border-radius:12px;overflow:hidden;user-select:none}.rt .pdf iframe{display:block;width:100%;height:520px;border:0;background:#f6f6f5}.rt .pdf a{display:block;font-size:11px;font-weight:700;padding:6px 12px;text-align:right;text-decoration:none}.fb input{min-width:260px}</style></head><body><div class="card" id="card">
 <div class="rail" id="rail"></div>
 <div class="mid"><div class="mh"><div class="seg" id="seg"><button data-tab="notes">Notes</button><button data-tab="case">Cases</button><button data-tab="concept">Concepts</button><button data-tab="rule">Rules</button></div><input class="q" id="q" placeholder="Search" aria-label="Search"></div><div class="nl" id="nl"></div><button class="btn sm new" id="new">+ New note</button></div>
 <div class="ed" id="ed"></div>
 <div class="sheet" id="sheet2"><div class="box"><h3>Backup</h3><div class="sub" id="bM">Copy this code and keep it somewhere safe. To restore, paste a code here and press Restore.</div><textarea id="bT" rows="5" spellcheck="false" aria-label="Backup code"></textarea>
 <div class="rowb"><button class="btn ghost sm" id="bR">Restore</button><button class="btn sm" id="bC">Copy</button></div></div></div></div>
-<script src="w.js?v=6"></script><script src="rt.js?v=2"></script><script>
+<script src="w.js?v=6"></script><script src="rt.js?v=3"></script><script>
 var $=W.$,FC=W.q.get('c'),SK=FC?'_nbs'+FC:'nbs',IX=W.get('nb',[]),st=W.get(SK,{}),cc=st.c||null,N=null,pi=0,tab='notes',tm=null,
 TY={concept:['Concept',[['k','Term','e.g., Consideration',1],['d','Definition',''],['x','Example','']]],
 rule:['Rule / Statute',[['k','Source','e.g., Restatement § 71',1],['d','Text',''],['x','Elements','']]],
