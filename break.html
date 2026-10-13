@@ -31,9 +31,10 @@
 .np button:hover{background:var(--dot)}.np button.x{font-size:11px;color:var(--mute)}.np button.dn{opacity:.3}
 .sd .ov{border-radius:8px}
 .lv{border:0;background:transparent;font:inherit;font-size:11px;font-weight:700;color:var(--mute);cursor:pointer;padding:0 4px}.lv.on{color:var(--ink)}
-#qc{border:0;background:var(--chip);border-radius:8px;font-size:11px;font-weight:700;padding:4px 8px;color:var(--ink);text-transform:none;letter-spacing:0;cursor:pointer}.qt{align-items:center}</style></head><body><div class="card"><div class="hd"><span>Break</span><span class="tabs"><button class="pill on" data-t="g">2048</button><button class="pill" data-t="s">Sudoku</button><button class="pill" data-t="q">Quiz</button></span></div>
+#qc{border:0;background:var(--chip);border-radius:8px;font-size:11px;font-weight:700;padding:4px 8px;color:var(--ink);text-transform:none;letter-spacing:0;cursor:pointer}.qt{align-items:center}#rc{width:min(100%,560px);aspect-ratio:600/180;cursor:pointer;touch-action:manipulation}#pr .bar{width:min(100%,560px);justify-content:flex-start;gap:18px}</style></head><body><div class="card"><div class="hd"><span>Break</span><span class="tabs"><button class="pill on" data-t="g">2048</button><button class="pill" data-t="s">Sudoku</button><button class="pill" data-t="r">Run</button><button class="pill" data-t="q">Quiz</button></span></div>
 <div class="pane on" id="pg"><div class="bar"><span>Score<b id="sc">0</b></span><span>Best<b id="bs">0</b></span><button class="pill" id="ng">New game</button></div><div class="g" id="g" tabindex="0" aria-label="2048 board. Use arrow keys."></div><div class="hint">Arrow keys or swipe</div></div>
 <div class="pane" id="ps"><div class="bar"><span id="lvs"><button class="lv" data-l="e">Easy</button><button class="lv" data-l="m">Medium</button><button class="lv" data-l="h">Hard</button></span><span>Mistakes<b id="mk">0</b></span><button class="pill" id="ns">New</button></div><div class="sd" id="sd" tabindex="0" aria-label="Sudoku board. Click a cell, then type 1 to 9."></div><div class="np" id="np"></div></div>
+<div class="pane" id="pr"><div class="bar"><span>Score<b id="rsc">0</b></span><span>Best<b id="rbs">0</b></span></div><canvas id="rc" width="600" height="180" aria-label="Runner game. Press space or tap to jump."></canvas><div class="hint">Space / ↑ or tap to jump · ↓ to duck</div></div>
 <div class="pane" id="pq"><div class="q"><div class="qt"><select id="qc" aria-label="Course"></select><span><span id="qs"></span> <span id="qn"></span></span></div><div class="qq" id="qq"></div><div id="qo" style="display:flex;flex-direction:column;gap:6px"></div><button class="btn sm nx" id="qx">Next</button></div></div></div>
 <script src="w.js"></script><script>
 var $=W.$,G,S,over=false,best=+W.get('_g2048best',0)||0;
@@ -88,5 +89,31 @@ $('np').onclick=function(e){var b=e.target.closest('button');if(b)put(+b.getAttr
 $('lvs').onclick=function(e){var l=e.target.getAttribute('data-l');if(l)gen(l)};$('ns').onclick=function(){gen(SD?SD.lv:'m')};
 document.addEventListener('keydown',function(e){if(!$('ps').classList.contains('on')||!SD)return;if(/^[1-9]$/.test(e.key)){put(+e.key);return}if(e.key==='Backspace'||e.key==='Delete'||e.key==='0'){e.preventDefault();put(0);return}
 var mv={ArrowLeft:-1,ArrowRight:1,ArrowUp:-9,ArrowDown:9}[e.key];if(mv==null)return;e.preventDefault();if(SL<0)SL=0;else{var n=SL+mv;if(n>=0&&n<81&&!(mv===-1&&SL%9===0)&&!(mv===1&&SL%9===8))SL=n}sdraw()});
-document.querySelector('.tabs').onclick=function(e){var t=e.target.getAttribute('data-t');if(!t)return;[].forEach.call(this.children,function(b){b.classList.toggle('on',b===e.target)});$('pg').classList.toggle('on',t==='g');$('pq').classList.toggle('on',t==='q');$('ps').classList.toggle('on',t==='s');if(t==='s'){if(!SD){var o=W.get('_sdk',null);if(o&&o.a&&o.u){SD=o;sdraw()}else gen('e')}$('sd').focus()}if(t==='q'){qsel();if(!$('qq').textContent)ask()}if(t==='g')$('g').focus()};
+
+var R={on:false,st:'idle',y:0,vy:0,duck:false,obs:[],sp:6,sc:0,t:0,nx:60,best:+W.get('_runbest',0)||0,last:0},rcx=$('rc').getContext('2d');
+function ink(){return getComputedStyle(document.body).color}
+function rjump(){if(R.st==='over'){rreset();R.st='run';return}if(R.st==='idle'){R.st='run'}if(R.y===0){R.vy=11.5}}
+function rreset(){R.y=0;R.vy=0;R.obs=[];R.sp=6;R.sc=0;R.t=0;R.nx=60;R.duck=false}
+function dino(c,x,y,d,legs){c.fillRect(x+(d?14:18),y-(d?26:44),d?30:22,d?14:16);c.clearRect(x+(d?34:30),y-(d?23:40),3,3);c.fillRect(x+4,y-(d?18:30),d?28:22,d?12:18);c.fillRect(x,y-(d?20:34),6,d?8:10);c.fillRect(x+(d?28:24),y-(d?14:24),6,3);
+var a=legs?0:4;c.fillRect(x+8,y-6,4,6-a);c.fillRect(x+18,y-6,4,2+a)}
+function cactus(c,o){c.fillRect(o.x+o.w/2-4,180-26-o.h,8,o.h);c.fillRect(o.x,180-26-o.h*0.65,4,o.h*0.35);c.fillRect(o.x,180-26-o.h*0.35,o.w/2,4);c.fillRect(o.x+o.w-4,180-26-o.h*0.8,4,o.h*0.4);c.fillRect(o.x+o.w/2,180-26-o.h*0.45,o.w/2,4)}
+function bird(c,o,f){var y=180-26-o.h;c.fillRect(o.x,y,26,6);c.fillRect(o.x-6,y+1,8,4);c.fillRect(o.x+8,f?y-10:y+6,8,10)}
+function rframe(ts){if(!R.on){R.last=0;return}var dt=R.last?Math.min(2,(ts-R.last)/16.67):1;R.last=ts;var c=rcx,col=ink();c.clearRect(0,0,600,180);c.fillStyle=col;
+if(R.st==='run'){R.t+=dt;R.sc+=dt*0.15;R.sp=6+Math.min(7,R.sc/120);R.vy-=0.62*dt*(R.duck&&R.y>0?2.2:1);R.y=Math.max(0,R.y+R.vy*dt);if(R.y===0)R.vy=0;
+R.nx-=dt;if(R.nx<=0){var bd=R.sc>250&&Math.random()<0.3,o=bd?{b:1,x:620,w:26,h:[8,34,52][rnd(3)]}:{x:620,w:[16,22,30][rnd(3)],h:[30,38,46][rnd(3)]};R.obs.push(o);R.nx=48+rnd(60)-Math.min(20,R.sc/60)}
+R.obs.forEach(function(o){o.x-=R.sp*dt});R.obs=R.obs.filter(function(o){return o.x>-40});
+var dx=40,dw=R.duck&&R.y===0?44:36,dh=R.duck&&R.y===0?24:44,dy0=180-26-R.y;
+R.obs.forEach(function(o){var oy1=180-26-o.h-(o.b?10:0),oy2=o.b?180-26-o.h+6:180-26;if(dx+dw-6>o.x+3&&dx+6<o.x+o.w-3&&dy0-4>oy1+3&&dy0-dh+4<oy2-2)R.st='over'});
+if(R.st==='over'){var f=Math.floor(R.sc);if(f>R.best){R.best=f;W.set('_runbest',f)}}}
+c.fillRect(0,180-27,600,1);for(var i=0;i<12;i++){var gx=((i*61-R.t*R.sp)%600+600)%600;c.fillRect(gx,180-20+(i%3)*5,i%2?3:6,1)}
+R.obs.forEach(function(o){if(o.b)bird(c,o,Math.floor(R.t/10)%2);else cactus(c,o)});
+dino(c,40,180-26-R.y,R.duck&&R.y===0,Math.floor(R.t/6)%2||R.y>0);
+c.font='700 13px -apple-system,Helvetica,Arial,sans-serif';c.textAlign='center';
+if(R.st==='idle')c.fillText('Press space or tap to start',300,70);if(R.st==='over'){c.fillText('GAME OVER',300,64);c.font='600 11px -apple-system,Helvetica,Arial,sans-serif';c.fillText('Space or tap to try again',300,84)}
+$('rsc').textContent=Math.floor(R.sc);$('rbs').textContent=R.best;requestAnimationFrame(rframe)}
+$('rc').addEventListener('pointerdown',function(e){e.preventDefault();rjump()});
+document.addEventListener('keydown',function(e){if(!R.on)return;if(e.key===' '||e.key==='ArrowUp'){e.preventDefault();if(!e.repeat)rjump()}else if(e.key==='ArrowDown'){e.preventDefault();R.duck=true}});
+document.addEventListener('keyup',function(e){if(e.key==='ArrowDown')R.duck=false});
+function ron(v){if(v&&!R.on){R.on=true;if(R.st==='run')R.st='idle';requestAnimationFrame(rframe)}else if(!v)R.on=false}
+document.querySelector('.tabs').onclick=function(e){var t=e.target.getAttribute('data-t');if(!t)return;[].forEach.call(this.children,function(b){b.classList.toggle('on',b===e.target)});$('pg').classList.toggle('on',t==='g');$('pq').classList.toggle('on',t==='q');$('ps').classList.toggle('on',t==='s');$('pr').classList.toggle('on',t==='r');ron(t==='r');if(t==='s'){if(!SD){var o=W.get('_sdk',null);if(o&&o.a&&o.u){SD=o;sdraw()}else gen('e')}$('sd').focus()}if(t==='q'){qsel();if(!$('qq').textContent)ask()}if(t==='g')$('g').focus()};
 </script></body></html>
