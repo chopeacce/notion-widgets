@@ -1,0 +1,84 @@
+<!doctype html><html lang="en" spellcheck="false"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Mood Journal</title><link rel="stylesheet" href="w.css"><style>
+.nav{display:flex;align-items:center;gap:4px}
+.nav button.ar{border:0;background:transparent;color:var(--mute);font:inherit;font-size:15px;font-weight:700;cursor:pointer;width:24px;height:24px;border-radius:7px;line-height:1}
+.nav button.ar:hover{background:var(--chip);color:var(--ink)}.nav button.ar:disabled{opacity:.25;cursor:default;background:transparent}
+.dt{font-size:12px;font-weight:800;min-width:96px;text-align:center}
+.wrap{flex:1;min-height:0;overflow:auto;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.15fr);gap:22px;margin-top:14px}
+.sec{display:flex;flex-direction:column;gap:9px;min-width:0}
+.lbl{font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--mute)}
+.faces{display:flex;justify-content:space-between;gap:6px}
+.fc{flex:1;border:0;background:transparent;color:var(--ink);font:inherit;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:5px;padding:6px 0 4px;border-radius:12px}
+.fc svg{width:40px;height:40px;display:block}
+.fc span{font-size:10px;font-weight:700;color:var(--mute)}
+.fc:hover{background:var(--chip)}
+.fc.on span{color:var(--ink);font-weight:800}
+.fc .bg{fill:var(--bg);stroke:var(--ink)}.fc .ft{stroke:var(--ink);fill:none}.fc .fl{fill:var(--ink)}
+.fc.on .bg{fill:var(--ink)}.fc.on .ft{stroke:var(--bg)}.fc.on .fl{fill:var(--bg)}
+.chips{display:flex;flex-wrap:wrap;gap:5px}
+.ch{border:1px solid var(--line);background:var(--bg);color:var(--mute);font:inherit;font-size:11px;font-weight:700;padding:5px 10px;border-radius:999px;cursor:pointer}
+.ch:hover{color:var(--ink);border-color:var(--ink)}
+.ch.on{background:var(--ink);border-color:var(--ink);color:var(--bg)}
+.ta{width:100%;flex:1;min-height:120px;resize:none;font-family:inherit;font-size:13px;line-height:1.65;color:var(--ink);background:var(--chip);border:0;border-radius:12px;padding:12px 14px}
+.ta:focus,.gd:focus{outline:0;background:var(--chip);box-shadow:inset 0 0 0 1.5px var(--ink)}
+.gd{width:100%;font-size:12.5px;font-weight:600;color:var(--ink);background:var(--chip);border:0;border-radius:10px;padding:10px 12px}
+.ta::placeholder,.gd::placeholder{color:var(--mute);font-weight:500}
+.mo{border-top:1px solid var(--line);margin-top:14px;padding-top:12px;flex:none}
+.mh{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.cal{display:grid;grid-template-columns:repeat(31,minmax(0,1fr));gap:3px}
+.cd{border:0;background:transparent;padding:0;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;font:inherit}
+.cd i{display:block;width:100%;max-width:16px;aspect-ratio:1;border-radius:50%;background:var(--dot)}
+.cd i.m1{background:var(--ink);opacity:.18}.cd i.m2{background:var(--ink);opacity:.36}.cd i.m3{background:var(--ink);opacity:.55}.cd i.m4{background:var(--ink);opacity:.78}.cd i.m5{background:var(--ink)}
+.cd small{font-size:8.5px;font-weight:700;color:var(--mute);font-variant-numeric:tabular-nums}
+.cd.sel small{color:var(--ink);font-weight:900}.cd.sel i{box-shadow:0 0 0 2px var(--bg),0 0 0 3.5px var(--ink)}
+.cd.fu{cursor:default;opacity:.35}
+.lg{display:flex;align-items:center;gap:4px;font-size:9.5px;font-weight:700;color:var(--mute)}.lg i{width:8px;height:8px;border-radius:50%;background:var(--ink);display:inline-block}
+.sv{font-size:10px;color:var(--mute);font-weight:600;transition:opacity .3s}
+.clr{border:0;background:transparent;color:var(--mute);font:inherit;font-size:10px;font-weight:600;cursor:pointer;padding:0}.clr:hover{color:var(--ink)}
+@media (max-width:640px){.wrap{grid-template-columns:1fr;gap:16px;align-content:start}.ta{min-height:140px;flex:none}.cal{grid-template-columns:repeat(16,minmax(0,1fr));row-gap:6px}.fc svg{width:34px;height:34px}}
+</style></head><body><div class="card" id="card">
+<div class="hd"><span>Mood Journal</span><span class="nav"><button class="ar" id="pv" aria-label="Previous day">‹</button><span class="dt" id="dt"></span><button class="ar" id="nx" aria-label="Next day">›</button><button class="pill" id="td">Today</button></span></div>
+<div class="wrap">
+<div class="sec"><div class="lbl">How are you feeling?</div><div class="faces" id="faces"></div>
+<div class="lbl" style="margin-top:6px">Feelings</div><div class="chips" id="chips"></div></div>
+<div class="sec"><div class="mh" style="margin:0"><span class="lbl">Today in a few lines</span><span class="sv" id="sv"></span></div>
+<textarea class="ta" id="ta" placeholder="What happened today? How did it feel?"></textarea>
+<div class="lbl">One good thing</div><input class="gd" id="gd" placeholder="Something small that went right" maxlength="160"></div>
+</div>
+<div class="mo"><div class="mh"><span class="lbl" id="mt"></span><span class="lg" id="lg"></span></div><div class="cal" id="cal"></div></div>
+</div>
+<script src="w.js"></script><script>
+var $=W.$,K='mood',D=W.get(K,{}),cur=W.iso(new Date()),tm=null;
+var MO=[['Awful','M14 31 Q20 24 26 31'],['Low','M14.5 29.5 Q20 26.5 25.5 29.5'],['Okay','M14.5 28 L25.5 28'],['Good','M14 26.5 Q20 32 26 26.5'],['Great','']];
+var FE=['Happy','Calm','Grateful','Proud','Motivated','Hopeful','Tired','Anxious','Stressed','Sad','Lonely','Overwhelmed'];
+function face(i){var m=MO[i][1],eyes=i===4?'<path class="ft" d="M13.5 17.5 Q15.5 15 17.5 17.5 M22.5 17.5 Q24.5 15 26.5 17.5" stroke-width="2" stroke-linecap="round"/>':'<circle class="fl" cx="15.5" cy="17.5" r="1.9"/><circle class="fl" cx="24.5" cy="17.5" r="1.9"/>',mouth=i===4?'<path class="fl" d="M13 24.5 L27 24.5 Q27 32 20 32 Q13 32 13 24.5 Z"/>':'<path class="ft" d="'+m+'" stroke-width="2" stroke-linecap="round"/>',brow=i===0?'<path class="ft" d="M12.5 13.5 L17 15 M27.5 13.5 L23 15" stroke-width="1.8" stroke-linecap="round"/>':'';
+return '<svg viewBox="0 0 40 40" aria-hidden="true"><circle class="bg" cx="20" cy="20" r="18" stroke-width="2"/>'+brow+eyes+mouth+'</svg>'}
+function E(){return D[cur]||{}}
+function put(o){var has=o.m||(o.f&&o.f.length)||(o.t&&o.t.trim())||(o.g&&o.g.trim());if(has)D[cur]=o;else delete D[cur];W.set(K,D);flash()}
+function flash(){var s=$('sv');s.textContent='Saved';s.style.opacity=1;clearTimeout(s._t);s._t=setTimeout(function(){s.style.opacity=0},1200)}
+function today(){return W.iso(new Date())}
+function render(){var e=E(),d=W.day(cur),t=today();
+$('dt').textContent=cur===t?'Today · '+d.toLocaleDateString(W.lang,{month:'short',day:'numeric'}):d.toLocaleDateString(W.lang,{weekday:'short',month:'short',day:'numeric'});
+$('nx').disabled=cur>=t;$('td').style.visibility=cur===t?'hidden':'visible';
+$('faces').innerHTML=MO.map(function(m,i){return '<button class="fc'+(e.m===i+1?' on':'')+'" data-m="'+(i+1)+'" aria-pressed="'+(e.m===i+1)+'">'+face(i)+'<span>'+m[0]+'</span></button>'}).join('');
+var f=e.f||[];$('chips').innerHTML=FE.map(function(x){return '<button class="ch'+(f.indexOf(x)>=0?' on':'')+'" data-f="'+x+'" aria-pressed="'+(f.indexOf(x)>=0)+'">'+x+'</button>'}).join('');
+if(document.activeElement!==$('ta'))$('ta').value=e.t||'';if(document.activeElement!==$('gd'))$('gd').value=e.g||'';
+cal()}
+function cal(){var d=W.day(cur),y=d.getFullYear(),m=d.getMonth(),n=new Date(y,m+1,0).getDate(),t=today(),h='',cnt=0,sum=0;
+for(var i=1;i<=n;i++){var k=W.iso(new Date(y,m,i)),e=D[k],fu=k>t;if(e&&e.m){cnt++;sum+=e.m}h+='<button class="cd'+(k===cur?' sel':'')+(fu?' fu':'')+'" data-d="'+k+'"'+(fu?' disabled':'')+' aria-label="'+k+(e&&e.m?' '+MO[e.m-1][0]:'')+'"><i class="'+(e&&e.m?'m'+e.m:'')+'"></i><small>'+i+'</small></button>'}
+$('cal').innerHTML=h;var st=0,c=new Date();if(!(D[W.iso(c)]))c.setDate(c.getDate()-1);while(D[W.iso(c)]){st++;c.setDate(c.getDate()-1)}
+$('mt').textContent=d.toLocaleDateString(W.lang,{month:'long',year:'numeric'})+(cnt?' · '+cnt+(cnt>1?' days':' day')+' logged':'');
+$('lg').innerHTML=(st>1?st+'-day streak · ':'')+(cnt?'avg '+MO[Math.round(sum/cnt)-1][0]:'<i style="opacity:.18"></i> low <i></i> great')}
+function go(k){cur=k;render()}
+$('faces').onclick=function(e){var b=e.target.closest('.fc');if(!b)return;var o=Object.assign({},E()),v=+b.getAttribute('data-m');o.m=o.m===v?0:v;put(o);render()};
+$('chips').onclick=function(e){var b=e.target.closest('.ch');if(!b)return;var o=Object.assign({},E()),f=(o.f||[]).slice(),x=b.getAttribute('data-f'),i=f.indexOf(x);if(i>=0)f.splice(i,1);else f.push(x);o.f=f;put(o);render()};
+function typed(){var key=cur,v1=$('ta').value,v2=$('gd').value;clearTimeout(tm);tm=setTimeout(function(){if(key!==cur)return;var o=Object.assign({},E());o.t=v1;o.g=v2;put(o);cal()},400)}
+$('ta').oninput=typed;$('gd').oninput=typed;
+function flush(){if(!tm)return;clearTimeout(tm);tm=null;var o=Object.assign({},E());o.t=$('ta').value;o.g=$('gd').value;put(o)}
+$('pv').onclick=function(){flush();var d=W.day(cur);d.setDate(d.getDate()-1);go(W.iso(d))};
+$('nx').onclick=function(){flush();var d=W.day(cur);d.setDate(d.getDate()+1);var k=W.iso(d);if(k<=today())go(k)};
+$('td').onclick=function(){flush();go(today())};
+$('cal').onclick=function(e){var b=e.target.closest('.cd');if(b&&!b.disabled){flush();go(b.getAttribute('data-d'))}};
+window.addEventListener('pagehide',flush);
+W.on(function(k){if(k===K){D=W.get(K,{});render()}});
+render();
+</script></body></html>
