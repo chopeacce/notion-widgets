@@ -20,16 +20,16 @@
 .rest{font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--mute);padding:12px 4px 4px}
 .it.off .tt{color:var(--mute)}.it.off .ck{border-color:var(--line);cursor:default}
 .dys{display:flex;gap:4px}.dys button{flex:1;border:1px solid var(--line);background:var(--bg);color:var(--mute);font:inherit;font-size:11px;font-weight:800;padding:6px 0;border-radius:8px;cursor:pointer}.dys button.on{background:var(--ink);border-color:var(--ink);color:var(--bg)}
-.rp{font-size:10px;font-weight:700;color:var(--mute);display:flex;flex-direction:column;gap:3px}.btn.del{background:transparent;color:var(--mute);padding-left:4px;padding-right:4px}.btn.del:hover{color:var(--ink)}
+.rp{font-size:10px;font-weight:700;color:var(--mute);display:flex;flex-direction:column;gap:3px}.lf{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;font-size:11px;font-weight:700;color:var(--mute);background:var(--chip);border-radius:10px;padding:7px 8px 7px 12px;margin:4px 0 6px}.lf span:last-child{display:flex;gap:4px}.lf .pill{background:var(--bg)}#eM button{font-size:11.5px;padding:7px 0}.btn.del{background:transparent;color:var(--mute);padding-left:4px;padding-right:4px}.btn.del:hover{color:var(--ink)}
 @media (max-width:420px){.wk{display:none}}
 </style></head><body><div class="card" id="card">
 <div class="hd"><span>Daily</span><span class="sub" id="dt"></span></div>
 <div class="top"><div class="big num" id="cnt"></div><div class="pc" id="pc"></div></div>
 <div class="bar"><i id="pb"></i></div>
 <div class="ls" id="ls"></div>
-<input class="add" id="add" placeholder="Add a daily task — press Enter" maxlength="80" aria-label="Add a daily task">
-<div class="sheet" id="sheet"><div class="box"><h3>Edit daily task</h3><label>Task<input id="eT" maxlength="80"></label>
-<div class="rp"><span>Repeat on</span><div class="dys" id="eD"></div></div>
+<input class="add" id="add" placeholder="Add a task for today — press Enter" maxlength="80" aria-label="Add a task for today">
+<div class="sheet" id="sheet"><div class="box"><h3>Edit task</h3><label>Task<input id="eT" maxlength="80"></label>
+<div class="rp"><span>Show</span><div class="dys" id="eM"><button type="button" data-m="o">Today only</button><button type="button" data-m="r">Repeat</button></div></div><div class="rp" id="eR"><span>Repeat on</span><div class="dys" id="eD"></div></div>
 <div class="rowb"><button class="btn del sm" id="eX">Delete</button><span style="display:flex;gap:6px"><button class="btn ghost sm" id="eC">Cancel</button><button class="btn sm" id="eOk">Save</button></span></div></div></div>
 </div>
 <script src="w.js"></script><script>
@@ -38,26 +38,30 @@ var TICK='<svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2.5 6.3 5 8.6 9.
 function load(){S=W.get(K,null)||{items:[],log:{}};S.items=S.items||[];S.log=S.log||{}}
 function save(){var ks=Object.keys(S.log).sort();while(ks.length>120)delete S.log[ks.shift()];W.set(K,S)}
 function dOf(k){return W.day(k).getDay()}
-function due(it,k){return !it.days||!it.days.length||it.days.indexOf(dOf(k))>=0}
+function due(it,k){if(it.once)return it.once===k;return !it.days||!it.days.length||it.days.indexOf(dOf(k))>=0}
 function isDone(id,k){return (S.log[k]||[]).indexOf(id)>=0}
 function back(n){var d=new Date();d.setDate(d.getDate()-n);return W.iso(d)}
 function streak(it){var n=0,i=isDone(it.id,today)?0:1;for(;i<400;i++){var k=back(i);if(!due(it,k))continue;if(isDone(it.id,k))n++;else break}return n}
-function row(it,off){var on=!off&&isDone(it.id,today),w='';for(var i=6;i>=0;i--){var k=back(i);w+='<i class="'+(!due(it,k)?'n':isDone(it.id,k)?'y':'')+'" title="'+k+'"></i>'}var s=streak(it);
-return '<div class="it'+(on?' on':'')+(off?' off':'')+'" data-id="'+it.id+'"'+(off?'':' draggable="true"')+'><button class="ck" aria-label="'+(on?'Uncheck ':'Check ')+W.esc(it.t)+'"'+(off?' disabled':'')+'>'+TICK+'</button><span class="tt">'+W.esc(it.t)+'</span><span class="wk" aria-hidden="true">'+w+'</span><span class="st" title="Streak">'+(s>1?s+'d':'')+'</span><button class="mo" aria-label="Edit '+W.esc(it.t)+'">⋯</button></div>'}
+function row(it,off){var on=!off&&isDone(it.id,today),w='';if(!it.once)for(var i=6;i>=0;i--){var k=back(i);w+='<i class="'+(!due(it,k)?'n':isDone(it.id,k)?'y':'')+'" title="'+k+'"></i>'}var s=it.once?0:streak(it);
+return '<div class="it'+(on?' on':'')+(off?' off':'')+'" data-id="'+it.id+'"'+(off?'':' draggable="true"')+'><button class="ck" aria-label="'+(on?'Uncheck ':'Check ')+W.esc(it.t)+'"'+(off?' disabled':'')+'>'+TICK+'</button><span class="tt">'+W.esc(it.t)+'</span>'+(w?'<span class="wk" aria-hidden="true">'+w+'</span>':'')+'<span class="st" title="Streak">'+(s>1?s+'d':'')+'</span><button class="mo" aria-label="Edit '+W.esc(it.t)+'">⋯</button></div>'}
 function render(){load();var d=new Date();$('dt').textContent=d.toLocaleDateString(W.lang,{weekday:'short',month:'short',day:'numeric'});
-var A=S.items.filter(function(x){return due(x,today)}),B=S.items.filter(function(x){return !due(x,today)}),n=A.filter(function(x){return isDone(x.id,today)}).length,p=A.length?Math.round(n/A.length*100):0;
+var lim=back(7),ch=false;S.items=S.items.filter(function(x){if(x.once&&x.once<today&&(isDone(x.id,x.once)||x.once<lim)){ch=true;return false}return true});if(ch)save();
+var O=S.items.filter(function(x){return x.once===today}),R=S.items.filter(function(x){return !x.once&&due(x,today)}),A=O.concat(R),B=S.items.filter(function(x){return !x.once&&!due(x,today)}),LF=S.items.filter(function(x){return x.once&&x.once<today}),n=A.filter(function(x){return isDone(x.id,today)}).length,p=A.length?Math.round(n/A.length*100):0;
 $('cnt').innerHTML=n+'<small>/'+A.length+'</small>';$('pc').textContent=A.length?(n===A.length?'All done ✓':p+'%'):'';$('pb').style.width=p+'%';
-$('ls').innerHTML=(S.items.length?'':'<div class="empty">Add the things you want to do every day —<br>reading, briefing, a workout, water…</div>')+A.map(function(x){return row(x)}).join('')+(B.length?'<div class="rest">Not today</div>'+B.map(function(x){return row(x,1)}).join(''):'')}
+$('ls').innerHTML=(LF.length?'<div class="lf"><span>'+LF.length+' unfinished from '+(LF.every(function(x){return x.once===back(1)})?'yesterday':'earlier')+'</span><span><button class="pill" id="lfM">Move to today</button><button class="pill" id="lfX">Clear</button></span></div>':'')+(A.length||B.length?'':'<div class="empty">What do you need to get done today?<br>Add it below — the list starts fresh tomorrow.</div>')+O.map(function(x){return row(x)}).join('')+(R.length?(O.length?'<div class="rest">Every day</div>':'')+R.map(function(x){return row(x)}).join(''):'')+(B.length?'<div class="rest">Not today</div>'+B.map(function(x){return row(x,1)}).join(''):'')}
 $('ls').addEventListener('click',function(e){var r=e.target.closest('.it');if(!r)return;var id=r.getAttribute('data-id');
 if(e.target.closest('.mo')){open(id);return}if(e.target.closest('.ck')&&!r.classList.contains('off')){var L=(S.log[today]||[]).slice(),i=L.indexOf(id);if(i>=0)L.splice(i,1);else L.push(id);if(L.length)S.log[today]=L;else delete S.log[today];save();render()}});
+$('ls').addEventListener('click',function(e){var id=e.target.id;if(id!=='lfM'&&id!=='lfX')return;load();var L=S.items.filter(function(x){return x.once&&x.once<today});if(id==='lfM')L.forEach(function(x){x.once=today});else S.items=S.items.filter(function(x){return L.indexOf(x)<0});save();render()});
 $('ls').addEventListener('dblclick',function(e){var r=e.target.closest('.it');if(r&&e.target.closest('.tt'))open(r.getAttribute('data-id'))});
-$('add').addEventListener('keydown',function(e){if(e.key!=='Enter'||e.isComposing||e.keyCode===229)return;var v=this.value.trim();if(!v)return;load();S.items.push({id:W.uid(),t:v,days:null});save();this.value='';render()});
+$('add').addEventListener('keydown',function(e){if(e.key!=='Enter'||e.isComposing||e.keyCode===229)return;var v=this.value.trim();if(!v)return;load();S.items.push({id:W.uid(),t:v,days:null,once:today});save();this.value='';render()});
 var eDays=[];function dys(){$('eD').innerHTML=DN.map(function(n,i){var on=!eDays.length||eDays.indexOf(i)>=0;return '<button type="button" data-d="'+i+'" class="'+(on?'on':'')+'" aria-pressed="'+on+'">'+n+'</button>'}).join('')}
-function open(id){cur=S.items.filter(function(x){return x.id===id})[0];if(!cur)return;$('eT').value=cur.t;eDays=(cur.days||[]).slice();dys();$('eX').textContent='Delete';$('eX').removeAttribute('data-ok');$('sheet').classList.add('on');$('eT').focus()}
+var eRep=false;function mode(){[].forEach.call($('eM').children,function(b){var on=(b.getAttribute('data-m')==='r')===eRep;b.classList.toggle('on',on);b.setAttribute('aria-pressed',on)});$('eR').style.display=eRep?'':'none'}
+$('eM').onclick=function(e){var b=e.target.closest('button');if(!b)return;eRep=b.getAttribute('data-m')==='r';mode()};
+function open(id){cur=S.items.filter(function(x){return x.id===id})[0];if(!cur)return;$('eT').value=cur.t;eDays=(cur.days||[]).slice();eRep=!cur.once;mode();dys();$('eX').textContent='Delete';$('eX').removeAttribute('data-ok');$('sheet').classList.add('on');$('eT').focus()}
 $('eD').onclick=function(e){var b=e.target.closest('button');if(!b)return;var d=+b.getAttribute('data-d'),all=[0,1,2,3,4,5,6],cu=eDays.length?eDays.slice():all.slice(),i=cu.indexOf(d);if(i>=0)cu.splice(i,1);else cu.push(d);if(!cu.length)return;cu.sort();eDays=cu.length===7?[]:cu;dys()};
 function close(){$('sheet').classList.remove('on');cur=null}
 $('eC').onclick=close;$('sheet').onclick=function(e){if(e.target===this)close()};
-$('eOk').onclick=function(){if(!cur)return;var v=$('eT').value.trim();if(!v){$('eT').focus();return}load();var it=S.items.filter(function(x){return x.id===cur.id})[0];if(it){it.t=v;it.days=eDays.length?eDays.slice():null;save()}close();render()};
+$('eOk').onclick=function(){if(!cur)return;var v=$('eT').value.trim();if(!v){$('eT').focus();return}load();var it=S.items.filter(function(x){return x.id===cur.id})[0];if(it){it.t=v;if(eRep){delete it.once;it.days=eDays.length?eDays.slice():null}else{it.once=it.once&&it.once>=today?it.once:today;it.days=null}save()}close();render()};
 $('eT').addEventListener('keydown',function(e){if(e.key==='Enter'&&!e.isComposing&&e.keyCode!==229)$('eOk').click()});
 $('eX').onclick=function(){if(!cur)return;if(!this.getAttribute('data-ok')){this.setAttribute('data-ok','1');this.textContent='Sure?';return}load();var id=cur.id;S.items=S.items.filter(function(x){return x.id!==id});Object.keys(S.log).forEach(function(k){S.log[k]=S.log[k].filter(function(x){return x!==id});if(!S.log[k].length)delete S.log[k]});save();close();render()};
 document.addEventListener('keydown',function(e){if(e.key==='Escape')close()});
